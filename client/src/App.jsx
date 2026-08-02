@@ -1,32 +1,20 @@
-import { useState, useEffect, useRef } from 'react';
-import { AlertTriangle, CheckCircle, ShieldAlert, Code, History } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { AlertTriangle, CheckCircle, ShieldAlert, Code, History, Lightbulb } from 'lucide-react';
 
 function App() {
   const [code, setCode] = useState('');
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
-  const [historyError, setHistoryError] = useState(null);
-  const [activeTab, setActiveTab] = useState('analyzer'); // 'analyzer' or 'history'
-  const historyRequestIdRef = useRef(0);
+  const [activeTab, setActiveTab] = useState('analyzer');
 
   const fetchHistory = async () => {
-    const requestId = ++historyRequestIdRef.current;
     try {
       const res = await fetch('http://localhost:5000/api/history');
       const data = await res.json();
-      if (requestId !== historyRequestIdRef.current) return;
-
-      if (!res.ok || !Array.isArray(data)) {
-        throw new Error(`Unexpected history payload: ${res.status} ${res.statusText}`);
-      }
-
       setHistory(data);
-      setHistoryError(null);
     } catch (err) {
-      if (requestId !== historyRequestIdRef.current) return;
       console.error('Failed to load history', err);
-      setHistoryError('Unable to load scan history. Please try again.');
     }
   };
 
@@ -46,7 +34,7 @@ function App() {
       });
       const data = await response.json();
       setReport(data);
-      fetchHistory(); // Refresh history list after new scan
+      fetchHistory();
     } catch (err) {
       console.error('Error connecting to backend:', err);
       alert('Failed to connect to the bug detector server.');
@@ -85,7 +73,7 @@ function App() {
         <header className="mb-8 flex items-center justify-between border-b border-gray-800 pb-4">
           <div className="flex items-center space-x-3">
             <ShieldAlert className="w-8 h-8 text-indigo-400" />
-            <h1 className="text-2xl font-bold tracking-wide">Static Bug Detector</h1>
+            <h1 className="text-2xl font-bold tracking-wide">Static Bug Detector & Fixer</h1>
           </div>
           <div className="flex space-x-2">
             <button
@@ -107,7 +95,6 @@ function App() {
 
         {activeTab === 'analyzer' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Code Input Section */}
             <div className="flex flex-col bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700">
               <label className="flex items-center space-x-2 text-sm font-medium text-gray-300 mb-2">
                 <Code className="w-4 h-4 text-indigo-400" />
@@ -128,18 +115,15 @@ function App() {
               </button>
             </div>
 
-            {/* Results Report Section */}
             <div className="flex flex-col bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700">
               <h2 className="text-sm font-medium text-gray-300 mb-2 flex items-center justify-between">
-                <span>Analysis Report</span>
+                <span>Analysis Report & Solutions</span>
                 {report && (
                   <div className="flex items-center space-x-3">
-                    <span className="text-xs text-gray-400">
-                      Total Issues: {report.totalIssues}
-                    </span>
+                    <span className="text-xs text-gray-400">Total: {report.totalIssues}</span>
                     <button
                       onClick={handleDownloadReport}
-                      className="text-xs bg-gray-700 hover:bg-gray-600 text-indigo-300 px-2 py-1 rounded border border-gray-600 transition duration-150"
+                      className="text-xs bg-gray-700 hover:bg-gray-600 text-indigo-300 px-2 py-1 rounded border border-gray-600"
                     >
                       Export Report
                     </button>
@@ -151,7 +135,7 @@ function App() {
                 {!report ? (
                   <div className="h-full flex flex-col items-center justify-center text-gray-500 text-sm">
                     <AlertTriangle className="w-8 h-8 mb-2 opacity-40" />
-                    <p>Run an analysis to view detected bugs and vulnerabilities.</p>
+                    <p>Run an analysis to view bugs and recommended solutions.</p>
                   </div>
                 ) : report.totalIssues === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-green-400 text-sm">
@@ -169,9 +153,13 @@ function App() {
                           {getSeverityBadge(issue.severity)}
                         </div>
                         <p className="text-gray-400 text-xs mb-2">{issue.message}</p>
-                        <code className="block bg-gray-900 p-2 rounded text-xs font-mono text-red-400 border border-gray-800 overflow-x-auto">
-                          {issue.snippet}
-                        </code>
+                        <div className="mt-2 bg-gray-900 p-2 rounded border border-indigo-900/50">
+                          <div className="flex items-center space-x-1 text-xs font-semibold text-indigo-400 mb-1">
+                            <Lightbulb className="w-3.5 h-3.5" />
+                            <span>Suggested Solution:</span>
+                          </div>
+                          <p className="text-xs text-gray-300 font-mono">{issue.suggestedFix}</p>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -182,9 +170,7 @@ function App() {
         ) : (
           <div className="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
             <h2 className="text-lg font-semibold text-gray-200 mb-4">Past Scans Database</h2>
-            {historyError ? (
-              <p className="text-red-300 text-sm">{historyError}</p>
-            ) : history.length === 0 ? (
+            {history.length === 0 ? (
               <p className="text-gray-400 text-sm">No past scans found in MongoDB.</p>
             ) : (
               <div className="space-y-4">

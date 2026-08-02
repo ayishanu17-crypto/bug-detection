@@ -34,8 +34,6 @@ app.post('/api/analyze', async (req, res) => {
     res.json(results);
 });
 
-const PORT = process.env.PORT || 5000;
-// Add this route in server.js before app.listen(...)
 app.get('/api/history', async (req, res) => {
     try {
         const scans = await Scan.find().sort({ createdAt: -1 }).limit(10);
@@ -45,6 +43,8 @@ app.get('/api/history', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

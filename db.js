@@ -2,13 +2,10 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
     try {
-        await mongoose.connect('mongodb://localhost:27017/bug-detector', {
-            // Mongoose 6+ connects natively without extra flags
-        });
-        console.log('MongoDB Connected Successfully.');
+        await mongoose.connect('mongodb://localhost:27017/bug-detector');
+        console.log('✅ SUCCESS: Connected to MongoDB database!'); // Make sure this line exists
     } catch (err) {
-        console.error('MongoDB connection error:', err);
-        process.exit(1);
+        console.error('❌ ERROR: MongoDB connection failed:', err.message);
     }
 };
 
