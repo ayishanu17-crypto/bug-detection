@@ -7,6 +7,7 @@ import {
 function App() {
   const [currentView, setCurrentView] = useState('home'); // 'home', 'analyzer', 'history'
   const [code, setCode] = useState('');
+  const [language, setLanguage] = useState('javascript'); // Added language state
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
@@ -33,7 +34,7 @@ function App() {
       const response = await fetch('http://localhost:5000/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code, language }), // Include language choice in payload
       });
       const data = await response.json();
       setReport(data);
@@ -111,22 +112,22 @@ function App() {
       </header>
 
       {/* Dynamic Content Views */}
-      <main className="flex-grow">
+      <main className="grow">
         {currentView === 'home' && (
           <div className="space-y-20 pb-24">
             
             {/* Hero Section */}
-            <section className="relative overflow-hidden pt-16 pb-12 px-6 bg-gradient-to-b from-white via-slate-50 to-slate-100 border-b border-slate-200">
+            <section className="relative overflow-hidden pt-16 pb-12 px-6 bg-linear-to-b from-white via-slate-50 to-slate-100 border-b border-slate-200">
               <div className="max-w-5xl mx-auto text-center space-y-6">
                 <div className="inline-flex items-center space-x-2 bg-indigo-50 border border-indigo-100 text-indigo-700 px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-2xs">
                   <Zap className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>Monitor Code Quality & Core Web Vitals</span>
+                  <span>Monitor Code Quality & Multi-Language Parsers</span>
                 </div>
                 <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight">
                   Be faster than your <span className="text-indigo-600">competition</span>
                 </h1>
                 <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                  Optimize code architecture, identify bottlenecks instantly using AST syntax analysis, and automatically generate code fixes to elevate application performance.
+                  Optimize code architecture across JavaScript, Python, C, and C++ instantly, identifying bottlenecks and generating code fixes.
                 </p>
                 <div className="pt-4 flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-4">
                   <button
@@ -155,13 +156,13 @@ function App() {
                     <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
                     <span className="text-slate-500 ml-2">~/bug-detector/server.js</span>
                   </div>
-                  <span className="text-emerald-400 font-semibold">● AST Engine Online</span>
+                  <span className="text-emerald-400 font-semibold">● Multi-Language Engines Online</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 text-left">
                   <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                    <p className="text-xs text-slate-500 font-medium">Synthetic Scans</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-1">100% Real-time</p>
-                    <span className="text-xs text-emerald-600 font-semibold mt-2 inline-block">✓ Acorn Engine parsing</span>
+                    <p className="text-xs text-slate-500 font-medium">Supported Languages</p>
+                    <p className="text-2xl font-bold text-slate-900 mt-1">JS, Python, C/C++</p>
+                    <span className="text-xs text-emerald-600 font-semibold mt-2 inline-block">✓ Dynamic parser routing</span>
                   </div>
                   <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
                     <p className="text-xs text-slate-500 font-medium">Automated Fixes</p>
@@ -189,9 +190,9 @@ function App() {
                   <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-lg">
                     1
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900">Identify slow & flawed code</h3>
+                  <h3 className="text-xl font-bold text-slate-900">Select language & paste code</h3>
                   <p className="text-slate-600 text-sm leading-relaxed">
-                    Paste raw source files or test scripts to immediately highlight syntax errors, high-risk functions, and security risks.
+                    Choose between JavaScript, Python, C, or C++, then paste your source code to immediately highlight syntax errors.
                   </p>
                 </div>
 
@@ -275,17 +276,39 @@ function App() {
           <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Code Input Section */}
             <div className="flex flex-col bg-white rounded-2xl p-5 shadow-xs border border-slate-200">
-              <label className="flex items-center space-x-2 text-sm font-semibold text-slate-700 mb-2">
-                <Code className="w-4 h-4 text-indigo-600" />
-                <span>Paste Source Code Here</span>
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="flex items-center space-x-2 text-sm font-semibold text-slate-700">
+                  <Code className="w-4 h-4 text-indigo-600" />
+                  <span>Paste Source Code Here</span>
+                </label>
+                
+                {/* Language Selector Dropdown */}
+                <select 
+                  value={language} 
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="bg-slate-100 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="javascript">JavaScript</option>
+                  <option value="python">Python</option>
+                  <option value="c">C</option>
+                  <option value="cpp">C++</option>
+                </select>
+              </div>
+
               <textarea
                 className="w-full h-96 bg-slate-900 text-slate-100 font-mono text-sm p-4 rounded-xl border border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none shadow-inner"
-                placeholder="// Type or paste your JavaScript code here...&#10;var x = 10;&#10;eval('alert()');"
+                placeholder={
+                  language === 'python' 
+                    ? "# Type or paste your Python code here...\na = 10\nprint(a)" 
+                    : language === 'c' || language === 'cpp'
+                    ? "// Type or paste your C/C++ code here...\ngets(buffer);"
+                    : "// Type or paste your JavaScript code here...\nvar x = 10;\neval('alert()');"
+                }
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
               />
               <button
+                handleAnalyze
                 onClick={handleAnalyze}
                 disabled={loading}
                 className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl shadow transition duration-200 disabled:opacity-50 flex items-center justify-center space-x-2"
@@ -337,7 +360,7 @@ function App() {
                       <div key={index} className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs text-sm space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="font-bold text-slate-800">
-                            Line {issue.line}: {issue.ruleName}
+                            Line {issue.line}: {issue.message || issue.ruleName}
                           </span>
                           {getSeverityBadge(issue.severity)}
                         </div>
@@ -349,7 +372,7 @@ function App() {
                             <span>Suggested Solution:</span>
                           </div>
                           <p className="text-xs text-slate-700 font-mono bg-white p-2 rounded border border-indigo-100/60">
-                            {issue.suggestedFix}
+                            {issue.suggestion || issue.suggestedFix}
                           </p>
                         </div>
                       </div>
@@ -372,7 +395,7 @@ function App() {
                   {history.map((scan) => (
                     <div key={scan._id} className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-slate-400 mb-1">Scanned at: {new Date(scan.createdAt).toLocaleString()}</p>
+                        <p className="text-xs text-slate-400 mb-1">Scanned at: {new Date(scan.createdAt).toLocaleString()} {scan.language ? `• Lang: ${scan.language.toUpperCase()}` : ''}</p>
                         <p className="text-sm font-mono text-slate-700 truncate max-w-xl">{scan.codeSnippet}</p>
                       </div>
                       <div className="text-right">

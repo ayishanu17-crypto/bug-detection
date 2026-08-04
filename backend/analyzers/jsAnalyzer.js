@@ -1,7 +1,8 @@
+// analyzers/jsAnalyzer.js
 const acorn = require('acorn');
 const walk = require('acorn-walk');
 
-function analyzeSourceCode(codeString) {
+function analyzeJavaScript(codeString) {
     const issues = [];
     let ast;
 
@@ -27,10 +28,8 @@ function analyzeSourceCode(codeString) {
         };
     }
 
-    // Use acorn-walk simple visitor
     walk.simple(ast, {
         CallExpression(node) {
-            // Rule 1: eval() usage
             if (node.callee && node.callee.name === 'eval') {
                 issues.push({
                     line: node.loc.start.line,
@@ -42,9 +41,7 @@ function analyzeSourceCode(codeString) {
                 });
             }
         },
-
         VariableDeclaration(node) {
-            // Rule 2: var declaration
             if (node.kind === 'var') {
                 issues.push({
                     line: node.loc.start.line,
@@ -56,9 +53,7 @@ function analyzeSourceCode(codeString) {
                 });
             }
         },
-
         BlockStatement(node) {
-            // Rule 3: Empty block statement (ignoring function bodies if needed, but keeping your base logic)
             if (node.body.length === 0) {
                 issues.push({
                     line: node.loc.start.line,
@@ -78,4 +73,4 @@ function analyzeSourceCode(codeString) {
     };
 }
 
-module.exports = { analyzeSourceCode };
+module.exports = { analyzeJavaScript };
