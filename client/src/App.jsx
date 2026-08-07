@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 import { 
-  ShieldAlert, Code, History, Lightbulb, ArrowRight, CheckCircle2, 
-  Cpu, Database, Zap, BarChart3, TrendingUp, Search, Layers, ChevronRight, CheckCircle, AlertTriangle 
+  Code, History, Lightbulb, ArrowRight, CheckCircle2, 
+  Zap, AlertTriangle, CheckCircle, Network, Terminal 
 } from 'lucide-react';
 
 function App() {
-  const [currentView, setCurrentView] = useState('home'); // 'home', 'analyzer', 'history'
+  const [currentView, setCurrentView] = useState('home'); // 'home', 'analyzer', 'history', 'login', 'signup'
   const [code, setCode] = useState('');
-  const [language, setLanguage] = useState('javascript'); // Added language state
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
@@ -34,7 +37,7 @@ function App() {
       const response = await fetch('http://localhost:5000/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, language }), // Include language choice in payload
+        body: JSON.stringify({ code }),
       });
       const data = await response.json();
       setReport(data);
@@ -73,61 +76,25 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
-      {/* Navigation Bar - DebugBear Style */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setCurrentView('home')}>
-            <div className="bg-indigo-600 p-2 rounded-xl text-white shadow-sm shadow-indigo-200">
-              <ShieldAlert className="w-5 h-5" />
-            </div>
-            <span className="text-xl font-extrabold tracking-tight text-slate-900">DebugBear</span>
-          </div>
-          <nav className="flex items-center space-x-1 sm:space-x-3">
-            <button
-              onClick={() => setCurrentView('home')}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition ${currentView === 'home' ? 'text-indigo-600 bg-indigo-50/80' : 'text-slate-600 hover:bg-slate-100'}`}
-            >
-              Overview
-            </button>
-            <button
-              onClick={() => setCurrentView('analyzer')}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition ${currentView === 'analyzer' ? 'text-indigo-600 bg-indigo-50/80' : 'text-slate-600 hover:bg-slate-100'}`}
-            >
-              Live Code Analyzer
-            </button>
-            <button
-              onClick={() => setCurrentView('history')}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition ${currentView === 'history' ? 'text-indigo-600 bg-indigo-50/80' : 'text-slate-600 hover:bg-slate-100'}`}
-            >
-              Scan History
-            </button>
-            <button
-              onClick={() => setCurrentView('analyzer')}
-              className="ml-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg shadow-sm text-sm transition"
-            >
-              Get Started Free
-            </button>
-          </nav>
-        </div>
-      </header>
+      <Navbar currentView={currentView} setCurrentView={setCurrentView} />
 
-      {/* Dynamic Content Views */}
-      <main className="grow">
+      {/* Main Views */}
+      <main className="flex-grow">
         {currentView === 'home' && (
-          <div className="space-y-20 pb-24">
+          <div className="space-y-24 pb-24">
             
-            {/* Hero Section */}
-            <section className="relative overflow-hidden pt-16 pb-12 px-6 bg-linear-to-b from-white via-slate-50 to-slate-100 border-b border-slate-200">
+            {/* Hero Section with Image Preview */}
+            <section className="relative pt-16 pb-12 px-6 bg-gradient-to-b from-white via-slate-50 to-slate-100 border-b border-slate-200">
               <div className="max-w-5xl mx-auto text-center space-y-6">
                 <div className="inline-flex items-center space-x-2 bg-indigo-50 border border-indigo-100 text-indigo-700 px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-2xs">
                   <Zap className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>Monitor Code Quality & Multi-Language Parsers</span>
+                  <span>Next-Gen AST Static Analysis Platform</span>
                 </div>
                 <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight">
                   Be faster than your <span className="text-indigo-600">competition</span>
                 </h1>
                 <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                  Optimize code architecture across JavaScript, Python, C, and C++ instantly, identifying bottlenecks and generating code fixes.
+                  Optimize code architecture, identify vulnerabilities instantly using Abstract Syntax Trees, and automatically generate code fixes.
                 </p>
                 <div className="pt-4 flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-4">
                   <button
@@ -144,127 +111,74 @@ function App() {
                     View Database Logs
                   </button>
                 </div>
-                <p className="text-xs text-slate-400 pt-1">Get set up in minutes. No credit card required.</p>
               </div>
 
-              {/* Mock Dashboard Preview Image Container */}
-              <div className="max-w-5xl mx-auto mt-12 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden p-2 sm:p-4">
-                <div className="bg-slate-900 rounded-xl p-4 text-left font-mono text-xs text-slate-300 overflow-x-auto shadow-inner flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                    <span className="text-slate-500 ml-2">~/bug-detector/server.js</span>
+              {/* Attractive Hero Image Banner */}
+              <div className="max-w-5xl mx-auto mt-12 relative rounded-2xl overflow-hidden shadow-2xl border border-slate-200 group">
+                <div className="absolute inset-0 bg-indigo-950/20 z-10 group-hover:bg-transparent transition duration-500"></div>
+                <img 
+                  src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80" 
+                  alt="Code Development Dashboard" 
+                  className="w-full h-80 sm:h-96 object-cover transform group-hover:scale-105 transition duration-700"
+                />
+                <div className="absolute bottom-4 left-4 right-4 z-20 bg-slate-900/90 backdrop-blur-md p-4 rounded-xl border border-slate-800 text-left flex items-center justify-between text-white">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></div>
+                    <span className="text-xs font-mono">Live Scan: Acorn Engine Parser Active</span>
                   </div>
-                  <span className="text-emerald-400 font-semibold">● Multi-Language Engines Online</span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 text-left">
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                    <p className="text-xs text-slate-500 font-medium">Supported Languages</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-1">JS, Python, C/C++</p>
-                    <span className="text-xs text-emerald-600 font-semibold mt-2 inline-block">✓ Dynamic parser routing</span>
-                  </div>
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                    <p className="text-xs text-slate-500 font-medium">Automated Fixes</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-1">Instant Solution</p>
-                    <span className="text-xs text-indigo-600 font-semibold mt-2 inline-block">✓ Inline code recommendations</span>
-                  </div>
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                    <p className="text-xs text-slate-500 font-medium">Database Persistence</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-1">MongoDB Logged</p>
-                    <span className="text-xs text-amber-600 font-semibold mt-2 inline-block">✓ Complete audit trails</span>
-                  </div>
+                  <span className="text-xs bg-indigo-600 text-white px-2.5 py-1 rounded-md font-semibold">Ready</span>
                 </div>
               </div>
             </section>
 
-            {/* 3 Step Workflow Section */}
-            <section className="max-w-6xl mx-auto px-6 py-8">
+            {/* Feature Cards with Tech Imagery */}
+            <section className="max-w-6xl mx-auto px-6">
               <div className="text-center max-w-xl mx-auto space-y-3 mb-12">
-                <h2 className="text-3xl font-bold text-slate-900 tracking-tight">An efficient code optimization workflow</h2>
-                <p className="text-slate-600 text-sm">Everything you need to catch vulnerabilities, trace historical performance, and refactor seamlessly.</p>
+                <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Comprehensive code intelligence</h2>
+                <p className="text-slate-600 text-sm">Everything you need to catch vulnerabilities and refactor code seamlessly.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-xs space-y-4 relative group hover:border-indigo-500 transition">
-                  <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-lg">
-                    1
+                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition">
+                  <div className="h-48 overflow-hidden">
+                    <img 
+                      src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80" 
+                      alt="AST Parsing" 
+                      className="w-full h-full object-cover hover:scale-105 transition duration-500"
+                    />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900">Select language & paste code</h3>
-                  <p className="text-slate-600 text-sm leading-relaxed">
-                    Choose between JavaScript, Python, C, or C++, then paste your source code to immediately highlight syntax errors.
-                  </p>
-                </div>
-
-                <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-xs space-y-4 relative group hover:border-indigo-500 transition">
-                  <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center font-bold text-lg">
-                    2
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-900">Diagnose performance bottlenecks</h3>
-                  <p className="text-slate-600 text-sm leading-relaxed">
-                    Receive comprehensive reporting paired with precise bug descriptions, line numbers, and severity breakdowns.
-                  </p>
-                </div>
-
-                <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-xs space-y-4 relative group hover:border-indigo-500 transition">
-                  <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center font-bold text-lg">
-                    3
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-900">Apply instant solutions</h3>
-                  <p className="text-slate-600 text-sm leading-relaxed">
-                    Get clear refactoring directions and best practices to safely clean your codebase and export complete reports.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* Testimonials Section */}
-            <section className="bg-slate-100/70 border-y border-slate-200 py-16 px-6">
-              <div className="max-w-6xl mx-auto space-y-12">
-                <div className="text-center max-w-lg mx-auto">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Trusted by expert developers</h2>
-                  <p className="text-slate-600 text-sm mt-2">See how teams use DebugBear workflows to ensure top-tier software performance.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between space-y-4">
-                    <p className="text-slate-700 text-sm leading-relaxed italic">
-                      "DebugBear has been an eye opener for us and has really shown what's causing the performance bottlenecks on our codebases. The actionable solutions are invaluable."
-                    </p>
-                    <div>
-                      <p className="text-sm font-bold text-slate-900">Mandip Ahdan</p>
-                      <p className="text-xs text-slate-500">Head of Engineering</p>
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between space-y-4">
-                    <p className="text-slate-700 text-sm leading-relaxed italic">
-                      "The most actionable-info packed page speed & code visualization available. Provides unique features that are crucial to debugging complex issues instantly."
-                    </p>
-                    <div>
-                      <p className="text-sm font-bold text-slate-900">Robin Marx</p>
-                      <p className="text-xs text-slate-500">Web Protocol and Performance Expert</p>
-                    </div>
+                  <div className="p-6 space-y-2">
+                    <h3 className="text-lg font-bold text-slate-900">AST Structural Parsing</h3>
+                    <p className="text-slate-600 text-sm">Parses code syntax trees via Acorn engine instead of basic string regex checks.</p>
                   </div>
                 </div>
-              </div>
-            </section>
 
-            {/* Bottom Call to Action */}
-            <section className="max-w-5xl mx-auto px-6 text-center space-y-6 pt-6">
-              <div className="bg-indigo-900 text-white rounded-3xl p-10 sm:p-14 space-y-6 shadow-xl relative overflow-hidden">
-                <div className="relative z-10 space-y-4 max-w-2xl mx-auto">
-                  <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Ready to optimize your code?</h2>
-                  <p className="text-indigo-200 text-sm sm:text-base">
-                    Jump into the Live Code Analyzer right now to run your first structural check.
-                  </p>
-                  <button
-                    onClick={() => setCurrentView('analyzer')}
-                    className="mt-4 bg-white text-indigo-900 hover:bg-indigo-50 font-bold px-8 py-3.5 rounded-xl shadow-lg transition inline-flex items-center space-x-2"
-                  >
-                    <span>Launch Live Analyzer</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
+                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition">
+                  <div className="h-48 overflow-hidden">
+                    <img 
+                      src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80" 
+                      alt="Instant Fixes" 
+                      className="w-full h-full object-cover hover:scale-105 transition duration-500"
+                    />
+                  </div>
+                  <div className="p-6 space-y-2">
+                    <h3 className="text-lg font-bold text-slate-900">Instant Solutions</h3>
+                    <p className="text-slate-600 text-sm">Automatically offers actionable refactoring guidelines for every bug discovered.</p>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition">
+                  <div className="h-48 overflow-hidden">
+                    <img 
+                      src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80" 
+                      alt="Database Persistence" 
+                      className="w-full h-full object-cover hover:scale-105 transition duration-500"
+                    />
+                  </div>
+                  <div className="p-6 space-y-2">
+                    <h3 className="text-lg font-bold text-slate-900">MongoDB Persistence</h3>
+                    <p className="text-slate-600 text-sm">Maintains persistent logs of past scan histories and structured JSON reports.</p>
+                  </div>
                 </div>
               </div>
             </section>
@@ -274,41 +188,18 @@ function App() {
 
         {currentView === 'analyzer' && (
           <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Code Input Section */}
             <div className="flex flex-col bg-white rounded-2xl p-5 shadow-xs border border-slate-200">
-              <div className="flex items-center justify-between mb-2">
-                <label className="flex items-center space-x-2 text-sm font-semibold text-slate-700">
-                  <Code className="w-4 h-4 text-indigo-600" />
-                  <span>Paste Source Code Here</span>
-                </label>
-                
-                {/* Language Selector Dropdown */}
-                <select 
-                  value={language} 
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="bg-slate-100 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="javascript">JavaScript</option>
-                  <option value="python">Python</option>
-                  <option value="c">C</option>
-                  <option value="cpp">C++</option>
-                </select>
-              </div>
-
+              <label className="flex items-center space-x-2 text-sm font-semibold text-slate-700 mb-2">
+                <Code className="w-4 h-4 text-indigo-600" />
+                <span>Paste Source Code Here</span>
+              </label>
               <textarea
                 className="w-full h-96 bg-slate-900 text-slate-100 font-mono text-sm p-4 rounded-xl border border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none shadow-inner"
-                placeholder={
-                  language === 'python' 
-                    ? "# Type or paste your Python code here...\na = 10\nprint(a)" 
-                    : language === 'c' || language === 'cpp'
-                    ? "// Type or paste your C/C++ code here...\ngets(buffer);"
-                    : "// Type or paste your JavaScript code here...\nvar x = 10;\neval('alert()');"
-                }
+                placeholder="// Type or paste your JavaScript code here...&#10;var x = 10;&#10;eval('alert()');"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
               />
               <button
-                handleAnalyze
                 onClick={handleAnalyze}
                 disabled={loading}
                 className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl shadow transition duration-200 disabled:opacity-50 flex items-center justify-center space-x-2"
@@ -324,7 +215,6 @@ function App() {
               </button>
             </div>
 
-            {/* Results Report Section with Solutions */}
             <div className="flex flex-col bg-white rounded-2xl p-5 shadow-xs border border-slate-200">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-slate-700">Analysis Report & Solutions</h2>
@@ -360,7 +250,7 @@ function App() {
                       <div key={index} className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs text-sm space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="font-bold text-slate-800">
-                            Line {issue.line}: {issue.message || issue.ruleName}
+                            Line {issue.line}: {issue.ruleName}
                           </span>
                           {getSeverityBadge(issue.severity)}
                         </div>
@@ -372,7 +262,7 @@ function App() {
                             <span>Suggested Solution:</span>
                           </div>
                           <p className="text-xs text-slate-700 font-mono bg-white p-2 rounded border border-indigo-100/60">
-                            {issue.suggestion || issue.suggestedFix}
+                            {issue.suggestedFix}
                           </p>
                         </div>
                       </div>
@@ -395,7 +285,7 @@ function App() {
                   {history.map((scan) => (
                     <div key={scan._id} className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-slate-400 mb-1">Scanned at: {new Date(scan.createdAt).toLocaleString()} {scan.language ? `• Lang: ${scan.language.toUpperCase()}` : ''}</p>
+                        <p className="text-xs text-slate-400 mb-1">Scanned at: {new Date(scan.createdAt).toLocaleString()}</p>
                         <p className="text-sm font-mono text-slate-700 truncate max-w-xl">{scan.codeSnippet}</p>
                       </div>
                       <div className="text-right">
@@ -410,18 +300,12 @@ function App() {
             </div>
           </div>
         )}
+
+        {currentView === 'login' && <Login setCurrentView={setCurrentView} />}
+        {currentView === 'signup' && <Signup setCurrentView={setCurrentView} />}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-8 px-6 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
-          <div className="flex items-center space-x-2">
-            <ShieldAlert className="w-4 h-4 text-indigo-600" />
-            <span className="font-bold text-slate-800">DebugBear Analyzer</span>
-          </div>
-          <p>© 2026 DebugBear Ltd. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

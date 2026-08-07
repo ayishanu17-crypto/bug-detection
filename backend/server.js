@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 // Import language-specific analyzers
-const { analyzeSourceCode } = require('./analyzer'); // JavaScript (Acorn AST)
+const { analyzeSourceCode } = require('./analyzers/jsAnalyzer'); // JavaScript (Acorn AST)
 const { analyzePython } = require('./analyzers/pyAnalyzer');
 const { analyzeCCpp } = require('./analyzers/ccppAnalyzer');
 
