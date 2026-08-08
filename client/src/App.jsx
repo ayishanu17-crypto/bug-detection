@@ -3,13 +3,16 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Dashboard from './pages/Dashboard';
+import Settings from './pages/Settings';
+import CICD from './pages/CICD';
 import { 
   Code, History, Lightbulb, ArrowRight, CheckCircle2, 
-  Zap, AlertTriangle, CheckCircle, Network, Terminal 
+  Zap, AlertTriangle, CheckCircle, Network, Terminal, User, LogOut, ShieldAlert
 } from 'lucide-react';
 
 function App() {
-  const [currentView, setCurrentView] = useState('home'); // 'home', 'analyzer', 'history', 'login', 'signup'
+  const [currentView, setCurrentView] = useState('home'); // 'home', 'analyzer', 'history', 'login', 'signup', 'dashboard', 'settings', 'cicd'
   const [code, setCode] = useState('');
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -76,7 +79,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
-      <Navbar currentView={currentView} setCurrentView={setCurrentView} />
+      {/* Show regular Navbar on all views except dashboard */}
+      {currentView !== 'dashboard' && <Navbar currentView={currentView} setCurrentView={setCurrentView} />}
 
       {/* Main Views */}
       <main className="grow">
@@ -303,9 +307,13 @@ function App() {
 
         {currentView === 'login' && <Login setCurrentView={setCurrentView} />}
         {currentView === 'signup' && <Signup setCurrentView={setCurrentView} />}
+        {currentView === 'dashboard' && <Dashboard setCurrentView={setCurrentView} />}
+        {currentView === 'settings' && <Settings />}
+        {currentView === 'cicd' && <CICD />}
       </main>
 
-      <Footer />
+      {/* Show footer everywhere except dashboard */}
+      {currentView !== 'dashboard' && <Footer />}
     </div>
   );
 }

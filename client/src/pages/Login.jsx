@@ -9,13 +9,13 @@ export default function Login({ setCurrentView }) {
           <span className="text-2xl font-bold text-slate-900">Debugique</span>
         </div>
         <h2 className="text-xl font-bold mb-6 text-center">Log in to your account</h2>
-        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-          <input type="email" placeholder="Email address" className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" />
-          <input type="password" placeholder="Password" className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" />
-          <button className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700">Log In</button>
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setCurrentView('dashboard'); }}>
+          <input type="email" placeholder="Email address" className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" required />
+          <input type="password" placeholder="Password" className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" required />
+          <button type="submit" className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition">Log In</button>
         </form>
         <p className="mt-6 text-center text-sm text-slate-600">
-          Don't have an account? <button onClick={() => setCurrentView('signup')} className="text-indigo-600 font-bold hover:underline">Sign up</button>
+          Don't have an account? <button type="button" onClick={() => setCurrentView('signup')} className="text-indigo-600 font-bold hover:underline">Sign up</button>
         </p>
       </div>
     </div>
