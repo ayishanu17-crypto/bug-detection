@@ -4,7 +4,7 @@ export default function Home({ setCurrentView }) {
   return (
     <div className="space-y-36 pb-24">
       {/* 1. Hero Section */}
-      <section className="relative pt-20 pb-16 px-6 bg-gradient-to-b from-white via-slate-50 to-slate-100 border-b border-slate-200">
+      <section className="relative pt-20 pb-16 px-6 bg-linear-to-b from-white via-slate-50 to-slate-100 border-b border-slate-200">
         <div className="max-w-4xl mx-auto text-center space-y-6">
           <div className="inline-flex items-center space-x-2 bg-indigo-50 border border-indigo-100 text-indigo-700 px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-2xs">
             <Sparkles className="w-3.5 h-3.5 text-indigo-600" />

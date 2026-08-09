@@ -1,4 +1,4 @@
-import { ShieldAlert, LogOut, ArrowRight, CheckCircle2, Activity, User, Code2, Database, Clock, Terminal, Key, GitBranch } from 'lucide-react';
+import { ShieldAlert, LogOut, ArrowRight, CheckCircle2, Activity, User, Code2, Database, Clock, Terminal, Key, GitBranch, Sliders, Webhook } from 'lucide-react';
 
 export default function Dashboard({ setCurrentView }) {
   return (
@@ -32,7 +32,7 @@ export default function Dashboard({ setCurrentView }) {
       </header>
 
       {/* Dashboard Main Content */}
-      <main className="max-w-7xl mx-auto p-6 space-y-8 grow w-full">
+      <main className="max-w-7xl mx-auto p-6 space-y-8 flex-grow w-full">
         {/* Hero Welcome Banner */}
         <div className="bg-gradient-to-r from-indigo-900 to-slate-900 rounded-2xl p-8 text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-2">
@@ -41,7 +41,7 @@ export default function Dashboard({ setCurrentView }) {
             </span>
             <h1 className="text-3xl font-extrabold tracking-tight">Your Code Intelligence Hub</h1>
             <p className="text-slate-300 text-sm max-w-xl">
-              Launch live AST static analysis code scans, review past telemetry logs, and configure CI/CD pipelines seamlessly.
+              Launch live AST static analysis code scans, review custom rules, and configure webhook telemetry feeds seamlessly.
             </p>
           </div>
           <button
@@ -80,14 +80,14 @@ export default function Dashboard({ setCurrentView }) {
           </div>
         </div>
 
-        {/* Extended Navigation Grid (Includes Settings & CI/CD) */}
+        {/* Extended Navigation Grid */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-6">
           <div>
             <h2 className="text-lg font-bold text-slate-900">Platform Navigation & Tools</h2>
-            <p className="text-slate-500 text-xs">Access all debugging modules and integration pipelines.</p>
+            <p className="text-slate-500 text-xs">Access all debugging modules and customization suites.</p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div 
               onClick={() => setCurrentView('analyzer')}
               className="p-5 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/20 transition cursor-pointer flex flex-col justify-between space-y-3"
@@ -117,16 +117,16 @@ export default function Dashboard({ setCurrentView }) {
             </div>
 
             <div 
-              onClick={() => setCurrentView('settings')}
+              onClick={() => setCurrentView('rules')}
               className="p-5 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/20 transition cursor-pointer flex flex-col justify-between space-y-3"
             >
-              <div className="p-2 bg-amber-50 text-amber-600 rounded-lg w-fit"><Key size={20} /></div>
+              <div className="p-2 bg-amber-50 text-amber-600 rounded-lg w-fit"><Sliders size={20} /></div>
               <div>
-                <h3 className="font-bold text-slate-800 text-sm">API Settings</h3>
-                <p className="text-slate-500 text-xs pt-1">Manage bearer tokens & team members.</p>
+                <h3 className="font-bold text-slate-800 text-sm">Custom Rule Studio</h3>
+                <p className="text-slate-500 text-xs pt-1">Define custom AST linting rules.</p>
               </div>
               <div className="flex items-center space-x-1 text-xs font-semibold text-amber-600 pt-2">
-                <span>Configure</span><ArrowRight size={14} />
+                <span>Configure rules</span><ArrowRight size={14} />
               </div>
             </div>
 
@@ -141,6 +141,34 @@ export default function Dashboard({ setCurrentView }) {
               </div>
               <div className="flex items-center space-x-1 text-xs font-semibold text-purple-600 pt-2">
                 <span>View snippet</span><ArrowRight size={14} />
+              </div>
+            </div>
+
+            <div 
+              onClick={() => setCurrentView('alerts')}
+              className="p-5 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/20 transition cursor-pointer flex flex-col justify-between space-y-3"
+            >
+              <div className="p-2 bg-rose-50 text-rose-600 rounded-lg w-fit"><Webhook size={20} /></div>
+              <div>
+                <h3 className="font-bold text-slate-800 text-sm">Webhook Alerts</h3>
+                <p className="text-slate-500 text-xs pt-1">Slack & Discord bug notifications.</p>
+              </div>
+              <div className="flex items-center space-x-1 text-xs font-semibold text-rose-600 pt-2">
+                <span>Setup webhook</span><ArrowRight size={14} />
+              </div>
+            </div>
+
+            <div 
+              onClick={() => setCurrentView('settings')}
+              className="p-5 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/20 transition cursor-pointer flex flex-col justify-between space-y-3"
+            >
+              <div className="p-2 bg-sky-50 text-sky-600 rounded-lg w-fit"><Key size={20} /></div>
+              <div>
+                <h3 className="font-bold text-slate-800 text-sm">API Settings</h3>
+                <p className="text-slate-500 text-xs pt-1">Manage bearer tokens & team members.</p>
+              </div>
+              <div className="flex items-center space-x-1 text-xs font-semibold text-sky-600 pt-2">
+                <span>Configure</span><ArrowRight size={14} />
               </div>
             </div>
           </div>
