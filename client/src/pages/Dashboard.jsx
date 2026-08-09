@@ -32,9 +32,9 @@ export default function Dashboard({ setCurrentView }) {
       </header>
 
       {/* Dashboard Main Content */}
-      <main className="max-w-7xl mx-auto p-6 space-y-8 flex-grow w-full">
+      <main className="max-w-7xl mx-auto p-6 space-y-8 grow w-full">
         {/* Hero Welcome Banner */}
-        <div className="bg-gradient-to-r from-indigo-900 to-slate-900 rounded-2xl p-8 text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="bg-linear-to-r from-indigo-900 to-slate-900 rounded-2xl p-8 text-white shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-2">
             <span className="bg-indigo-500/30 text-indigo-300 text-xs font-semibold px-3 py-1 rounded-full border border-indigo-400/30">
               Welcome to Debugique

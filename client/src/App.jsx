@@ -94,7 +94,7 @@ function App() {
           <div className="space-y-24 pb-24">
             
             {/* Hero Section with Restored Image Preview */}
-            <section className="relative pt-16 pb-12 px-6 bg-gradient-to-b from-white via-slate-50 to-slate-100 border-b border-slate-200">
+            <section className="relative pt-16 pb-12 px-6 bg-linear-to-b from-white via-slate-50 to-slate-100 border-b border-slate-200">
               <div className="max-w-5xl mx-auto text-center space-y-6">
                 <div className="inline-flex items-center space-x-2 bg-indigo-50 border border-indigo-100 text-indigo-700 px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-2xs">
                   <Zap className="w-3.5 h-3.5 text-indigo-600" />

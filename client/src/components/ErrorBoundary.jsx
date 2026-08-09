@@ -23,7 +23,7 @@ export default class ErrorBoundary extends React.Component {
             <AlertTriangle size={32} />
           </div>
           <h1 className="text-xl font-bold">Runtime Component Crash Detected</h1>
-          <p className="text-slate-400 text-xs font-mono bg-slate-950 p-4 rounded-xl border border-slate-800 max-w-xl overflow-x-auto text-red-300">
+          <p className="text-xs font-mono bg-slate-950 p-4 rounded-xl border border-slate-800 max-w-xl overflow-x-auto text-red-300">
             {this.state.error?.toString()}
           </p>
           <button 
