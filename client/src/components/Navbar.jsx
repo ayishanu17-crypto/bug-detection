@@ -1,4 +1,4 @@
-import { ShieldAlert, ChevronDown, BarChart3, Zap, Globe, Search } from 'lucide-react';
+import { ShieldAlert, ChevronDown } from 'lucide-react';
 
 export default function Navbar({ setCurrentView }) {
   return (
@@ -9,12 +9,6 @@ export default function Navbar({ setCurrentView }) {
             <div className="bg-indigo-600 p-1.5 rounded-lg text-white"><ShieldAlert size={20} /></div>
             <span className="text-xl font-bold tracking-tighter text-slate-900">Debugique</span>
           </div>
-          <nav className="hidden md:flex space-x-6 text-sm font-semibold text-slate-600">
-            <button className="flex items-center hover:text-indigo-600">Product <ChevronDown size={14} className="ml-1"/></button>
-            <button className="hover:text-indigo-600">Features</button>
-            <button className="hover:text-indigo-600">Pricing</button>
-            <button className="hover:text-indigo-600">Docs</button>
-          </nav>
         </div>
         <div className="flex items-center space-x-4">
           <button 
@@ -27,7 +21,7 @@ export default function Navbar({ setCurrentView }) {
             onClick={() => setCurrentView('signup')} 
             className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-800 transition"
           >
-            Start Free Trial
+            Get started
           </button>
         </div>
       </div>
