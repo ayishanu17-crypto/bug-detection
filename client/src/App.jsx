@@ -13,6 +13,8 @@ import {
   Zap, AlertTriangle, CheckCircle, Network, Terminal, User, LogOut, ShieldAlert, GitCompare, ShieldCheck, Sliders, Download, FileText, X, Play
 } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 function App() {
   const getInitialView = () => {
     const hash = window.location.hash.replace('#', '');
@@ -55,7 +57,7 @@ function App() {
 
   const fetchHistory = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/history');
+      const res = await fetch(`${API_BASE_URL}/api/history`);
       const data = await res.json();
       setHistory(data);
     } catch (err) {
@@ -102,7 +104,7 @@ function App() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/analyze', {
+      const response = await fetch(`${API_BASE_URL}/api/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, language: selectedLanguage }),
