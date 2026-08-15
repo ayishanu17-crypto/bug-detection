@@ -27,6 +27,7 @@ function App() {
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   const [activeRules, setActiveRules] = useState({
     noEval: true,
@@ -65,6 +66,11 @@ function App() {
     fetchHistory();
   }, []);
 
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+    setCurrentView('dashboard');
+  };
+
   const handleAnalyze = async () => {
     if (!code.trim()) return;
     setLoading(true);
@@ -73,7 +79,7 @@ function App() {
       const response = await fetch('http://localhost:5000/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, activeRules }),
+        body: JSON.stringify({ code, language: 'javascript' }),
       });
       const data = await response.json();
       setReport(data);
@@ -102,30 +108,26 @@ function App() {
 
   const health = getHealthScore();
 
-  const isSplitLayout = currentView === 'login' || currentView === 'signup' || currentView === 'settings' || currentView === 'cicd' || currentView === 'rules' || currentView === 'alerts';
+  const isSplitLayout = currentView === 'login' || currentView === 'signup';
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-500 selection:text-white flex flex-col w-full">
       
-      {!isSplitLayout && currentView !== 'dashboard' && <Navbar currentView={currentView} setCurrentView={changeView} />}
+      {!isSplitLayout && currentView !== 'dashboard' && <Navbar currentView={currentView} setCurrentView={changeView} isLoggedIn={isLoggedIn} />}
 
       <main className={`grow w-full flex flex-col ${!isSplitLayout ? 'pb-24' : ''}`}>
         
-        {/* Split Screen Layout for Auth/Settings */}
+        {/* Split screen only for login/signup views */}
         {isSplitLayout ? (
           <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-950">
-            <div className="bg-white p-8 sm:p-16 flex flex-col justify-between overflow-y-auto">
+            <div className="bg-white p-8 sm:p-16 min-h-screen flex flex-col justify-between overflow-y-auto">
               <div className="space-y-6 w-full max-w-xl mx-auto">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold tracking-widest text-indigo-600 uppercase">CodeGuard</span>
+                  <span className="text-xs font-bold tracking-widest text-indigo-600 uppercase">Codeguard</span>
                   <button onClick={() => changeView('home')} className="text-xs text-slate-500 hover:text-indigo-600 font-semibold">Back to Home</button>
                 </div>
-                {currentView === 'login' && <Login setCurrentView={changeView} />}
-                {currentView === 'signup' && <Signup setCurrentView={changeView} />}
-                {currentView === 'settings' && <Settings />}
-                {currentView === 'cicd' && <CICD />}
-                {currentView === 'rules' && <RuleBuilder />}
-                {currentView === 'alerts' && <Alerts />}
+                {currentView === 'login' && <Login setCurrentView={changeView} onAuthSuccess={handleLoginSuccess} />}
+                {currentView === 'signup' && <Signup setCurrentView={changeView} onAuthSuccess={handleLoginSuccess} />}
               </div>
               <div className="w-full max-w-xl mx-auto text-xs text-slate-400 pt-6 border-t border-slate-100 flex justify-between items-center mt-4">
                 <span>Enterprise Workspace</span>
@@ -133,32 +135,13 @@ function App() {
               </div>
             </div>
 
-            <div className="relative overflow-hidden hidden lg:flex flex-col justify-between p-12 text-white bg-slate-950">
-              <div className="absolute inset-0 z-0">
-                <img 
-                  src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1800&q=80" 
-                  alt="Developer Code Workspace" 
-                  className="w-full h-full object-cover opacity-85 transform scale-100 hover:scale-105 transition duration-1000"
+            <div className="hidden lg:flex items-center justify-center p-12 bg-slate-950">
+              <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/10 shadow-2xl">
+                <img
+                  src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80"
+                  alt="Debugger interface on screen"
+                  className="h-full w-full object-cover"
                 />
-                <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-              </div>
-
-              <div className="flex justify-between items-center z-10">
-                <span className="font-bold tracking-wider text-xs bg-black/40 text-white px-3.5 py-1.5 rounded-full uppercase border border-white/20 backdrop-blur-md">
-                  Enterprise Grade
-                </span>
-                <span className="font-extrabold text-lg tracking-tight text-white drop-shadow-md">CodeGuard</span>
-              </div>
-
-              <div className="z-10 space-y-3 bg-slate-950/70 backdrop-blur-md p-6 rounded-2xl border border-white/10 shadow-2xl max-w-lg">
-                <h3 className="text-base font-bold text-white">Automated Code Intelligence</h3>
-                <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                  Real-time AST parsing, automated patch generation, and deep repository health metrics built for modern development teams.
-                </p>
-                <div className="pt-2 flex items-center space-x-2 text-xs text-emerald-400 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>Static Analysis Engine Fully Operational</span>
-                </div>
               </div>
             </div>
           </div>
@@ -166,8 +149,8 @@ function App() {
           <>
             {/* Home View */}
             {currentView === 'home' && (
-              <div className="w-full space-y-24 pb-24">
-                <section className="relative pt-16 pb-12 px-8 w-full bg-white border-b border-slate-200 animated-fade-in-up">
+              <div className="w-full space-y-12 pb-16">
+                <section className="relative pt-10 pb-8 px-8 w-full bg-white border-b border-slate-200 animated-fade-in-up">
                   <div className="w-full text-center space-y-6">
                     <div className="inline-flex items-center space-x-2 bg-indigo-50 border border-indigo-100 text-indigo-700 px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-2xs animated-pulse-glow">
                       <Zap className="w-3.5 h-3.5 text-indigo-600" />
@@ -196,12 +179,12 @@ function App() {
                     </div>
                   </div>
 
-                  <div className="w-full mt-12 relative rounded-2xl overflow-hidden shadow-2xl border border-slate-200 group animated-float">
+                  <div className="w-full mt-6 relative rounded-2xl overflow-hidden shadow-lg border border-slate-200 group animated-float">
                     <div className="absolute inset-0 bg-indigo-950/20 z-10 group-hover:bg-transparent transition duration-500"></div>
                     <img 
                       src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1800&q=80" 
                       alt="Code Development Dashboard" 
-                      className="w-full h-96 sm:h-112.5 object-cover transform group-hover:scale-105 transition duration-700"
+                      className="w-full h-64 sm:h-72 object-cover transform group-hover:scale-105 transition duration-700"
                     />
                     <div className="absolute bottom-6 left-6 right-6 z-20 bg-slate-900/90 backdrop-blur-md p-5 rounded-xl border border-slate-800 text-left flex items-center justify-between text-white">
                       <div className="flex items-center space-x-3">
@@ -214,7 +197,7 @@ function App() {
                 </section>
 
                 <section className="w-full px-8">
-                  <div className="text-center max-w-2xl mx-auto space-y-3 mb-12">
+                  <div className="text-center max-w-2xl mx-auto space-y-2 mb-10">
                     <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Comprehensive code intelligence</h2>
                     <p className="text-slate-600 text-base">Everything you need to catch vulnerabilities and refactor code seamlessly.</p>
                   </div>
@@ -252,7 +235,7 @@ function App() {
                   </div>
                 </section>
 
-                <section className="w-full bg-slate-50 px-8 py-16 animated-fade-in-up">
+                <section className="w-full bg-slate-50 px-8 py-12 animated-fade-in-up">
                   <div className="max-w-5xl mx-auto grid gap-10 lg:grid-cols-2 items-center">
                     <div className="space-y-6">
                       <span className="inline-flex items-center rounded-full bg-indigo-100 text-indigo-700 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em]">How it works</span>
@@ -278,7 +261,7 @@ function App() {
                   </div>
                 </section>
 
-                <section className="w-full px-8 py-16 animated-fade-in-up">
+                <section className="w-full px-8 py-12 animated-fade-in-up">
                   <div className="max-w-6xl mx-auto space-y-10">
                     <div className="grid gap-6 lg:grid-cols-3">
                       {[
@@ -310,44 +293,6 @@ function App() {
                   </div>
                 </section>
 
-                <section className="w-full bg-slate-50 px-8 py-16 animated-fade-in-up">
-                  <div className="max-w-6xl mx-auto grid gap-10 lg:grid-cols-3">
-                    <div className="lg:col-span-2 rounded-3xl bg-white border border-slate-200 p-10 shadow-sm">
-                      <h2 className="text-3xl font-extrabold text-slate-900">What engineers love about Debugique</h2>
-                      <p className="mt-4 text-slate-600 leading-7">Instead of noisy static reports, enjoy structured issue summaries, recommended fixes, and tracking for every scan. The platform is built to help you ship stable code faster.</p>
-                      <div className="mt-8 space-y-5">
-                        {[
-                          { title: 'Clear remediation guidance', caption: 'Each issue includes a suggested patch sequence and explanation for rapid repair.' },
-                          { title: 'Historical context', caption: 'Review past scan history to see how your code quality improves over time.' },
-                          { title: 'Flexible rule control', caption: 'Toggle rule sets quickly so you can enforce the standards that matter most for your project.' },
-                        ].map((feature) => (
-                          <div key={feature.title} className="rounded-3xl bg-slate-50 border border-slate-200 p-6">
-                            <h3 className="font-semibold text-slate-900">{feature.title}</h3>
-                            <p className="mt-2 text-slate-600 text-sm leading-6">{feature.caption}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="rounded-3xl bg-white border border-slate-200 p-10 shadow-sm flex flex-col justify-between">
-                      <div>
-                        <span className="text-xs uppercase tracking-[0.25em] text-indigo-600 font-bold">Trusted by developers</span>
-                        <h3 className="mt-4 text-2xl font-bold text-slate-900">Keep code quality visible</h3>
-                        <p className="mt-3 text-slate-600 text-sm leading-6">Whether you are performing a quick sanity scan or doing an executive audit, Debugique offers a full code health overview in one place.</p>
-                      </div>
-                      <div className="mt-8 space-y-4 text-sm text-slate-600">
-                        <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
-                          <p className="font-semibold text-slate-900">DevOps</p>
-                          <p>Optimize pipeline health with fast results and reduced manual debugging.</p>
-                        </div>
-                        <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
-                          <p className="font-semibold text-slate-900">Security teams</p>
-                          <p>Catch insecure patterns early and maintain control over vulnerable code paths.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
               </div>
             )}
 
@@ -404,7 +349,7 @@ function App() {
                       {report && <span className="text-xs font-medium text-slate-500">Total: {report.totalIssues}</span>}
                     </div>
 
-                    <div className="w-full h-125 bg-slate-50 rounded-xl border border-slate-200 p-4 overflow-y-auto">
+                    <div className="w-full cd bg-slate-50 rounded-xl border border-slate-200 p-4 overflow-y-auto">
                       {!report ? (
                         <div className="h-full flex flex-col items-center justify-center text-slate-400 text-sm text-center px-4">
                           <AlertTriangle className="w-8 h-8 mb-2 opacity-50 text-indigo-500" />

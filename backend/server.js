@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 // Import language-specific analyzers
-const { analyzeSourceCode } = require('./analyzers/jsAnalyzer'); // JavaScript (Acorn AST)
+const { analyzeJavaScript } = require('./analyzers/jsAnalyzer'); // JavaScript (Acorn AST)
 const { analyzePython } = require('./analyzers/pyAnalyzer');
 const { analyzeCCpp } = require('./analyzers/ccppAnalyzer');
 
@@ -40,28 +40,12 @@ app.post('/api/analyze', async (req, res) => {
             return res.status(400).json({ error: 'No code provided.' });
         }
 
-        let analysisResult;
-        const selectedLang = language || 'javascript';
-
-        // Route to the correct parser/analyzer
-        switch (selectedLang) {
-            case 'python':
-                analysisResult = analyzePython(code);
-                break;
-            case 'c':
-            case 'cpp':
-                analysisResult = analyzeCCpp(code, selectedLang);
-                break;
-            case 'javascript':
-            default:
-                analysisResult = analyzeSourceCode(code);
-                break;
-        }
+        const analysisResult = analyzeJavaScript(code);
 
         // Save scan result to MongoDB Atlas
         const newScan = new Scan({
             codeSnippet: code,
-            language: selectedLang,
+            language: 'javascript',
             totalIssues: analysisResult.totalIssues,
             issuesFound: analysisResult.issuesFound
         });
