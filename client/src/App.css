@@ -1,15 +1,19 @@
+/* Utility Classes for Animations */
 .counter {
   font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
+  padding: 8px 16px;
+  border-radius: 8px;
   color: var(--accent);
   background: var(--accent-bg);
   border: 2px solid transparent;
-  transition: border-color 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-bottom: 24px;
+  font-weight: 600;
 
   &:hover {
     border-color: var(--accent-border);
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.2);
+    transform: scale(1.05);
   }
   &:focus-visible {
     outline: 2px solid var(--accent);
@@ -118,17 +122,20 @@
   a {
     color: var(--text-h);
     font-size: 16px;
-    border-radius: 6px;
+    border-radius: 8px;
     background: var(--social-bg);
     display: flex;
-    padding: 6px 12px;
+    padding: 8px 14px;
     align-items: center;
     gap: 8px;
     text-decoration: none;
-    transition: box-shadow 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 500;
 
     &:hover {
-      box-shadow: var(--shadow);
+      box-shadow: 0 8px 16px rgba(99, 102, 241, 0.15);
+      transform: translateY(-2px);
+      background: var(--accent-bg);
     }
     .button-icon {
       height: 18px;
@@ -161,10 +168,11 @@
   }
 }
 
+/* Enhanced Animations */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(24px);
   }
   to {
     opacity: 1;
@@ -174,21 +182,21 @@
 
 @keyframes floatMotion {
   0%, 100% {
-    transform: translateY(0);
+    transform: translateY(0) rotate(0deg);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-16px) rotate(2deg);
   }
 }
 
 @keyframes pulseGlow {
   0%, 100% {
     opacity: 1;
-    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.15);
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.2);
   }
   50% {
     opacity: 0.95;
-    box-shadow: 0 0 24px 10px rgba(99, 102, 241, 0.08);
+    box-shadow: 0 0 32px 12px rgba(99, 102, 241, 0.1);
   }
 }
 
@@ -204,8 +212,45 @@
   }
 }
 
+@keyframes shimmerEffect {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px);
+  }
+}
+
+/* Animated Classes */
 .animated-fade-in-up {
-  animation: fadeInUp 0.8s ease both;
+  animation: fadeInUp 0.8s ease-out;
 }
 
 .animated-float {
@@ -216,19 +261,56 @@
   animation: pulseGlow 2.8s ease-in-out infinite;
 }
 
+.animated-bounce-in {
+  animation: bounceIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.animated-shake {
+  animation: shake 0.5s;
+}
+
+/* Motion Card Enhancement */
 .motion-card {
-  transition: transform 0.45s ease, box-shadow 0.45s ease;
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s ease;
 }
 
 .motion-card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
 }
 
 .animated-gradient {
   background-size: 200% 200%;
-  animation: gradientMove 10s ease infinite;
+  animation: gradientMove 12s ease infinite;
 }
 
+/* Button Enhancements */
+button {
+  position: relative;
+  overflow: hidden;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+button:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Utility Ticks */
 .ticks {
   position: relative;
   width: 100%;
@@ -250,3 +332,33 @@
     border-right-color: var(--border);
   }
 }
+
+/* Smooth Scroll Behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Form Elements Enhancement */
+input, textarea, select {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+}
+
+input:focus, textarea:focus, select:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+}
+
+/* Responsive Grid */
+.grid {
+  transition: gap 0.4s ease;
+}
+
+/* Stagger Animation for Children */
+.stagger-item:nth-child(1) { animation-delay: 0s; }
+.stagger-item:nth-child(2) { animation-delay: 0.1s; }
+.stagger-item:nth-child(3) { animation-delay: 0.2s; }
+.stagger-item:nth-child(4) { animation-delay: 0.3s; }
+.stagger-item:nth-child(5) { animation-delay: 0.4s; }
+.stagger-item:nth-child(6) { animation-delay: 0.5s; }
+

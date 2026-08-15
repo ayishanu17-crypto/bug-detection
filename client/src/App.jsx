@@ -28,6 +28,7 @@ function App() {
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState('javascript');
   
   const [activeRules, setActiveRules] = useState({
     noEval: true,
@@ -71,6 +72,31 @@ function App() {
     setCurrentView('dashboard');
   };
 
+  // Detect programming language from code content
+  const detectLanguage = (codeText) => {
+    if (!codeText.trim()) return 'javascript';
+    
+    const lowerCode = codeText.toLowerCase();
+    
+    // Python indicators
+    if (lowerCode.includes('def ') || lowerCode.includes('import ') || lowerCode.includes('from ') || lowerCode.includes('print(') || lowerCode.includes('class ') && !lowerCode.includes('{')) {
+      return 'python';
+    }
+    
+    // C/C++ indicators
+    if (lowerCode.includes('#include') || lowerCode.includes('::') || lowerCode.includes('std::')) {
+      return 'cpp';
+    }
+    
+    // Java indicators
+    if (lowerCode.includes('public class ') || lowerCode.includes('public static') || lowerCode.includes('import java')) {
+      return 'java';
+    }
+    
+    // Default to JavaScript
+    return 'javascript';
+  };
+
   const handleAnalyze = async () => {
     if (!code.trim()) return;
     setLoading(true);
@@ -79,7 +105,7 @@ function App() {
       const response = await fetch('http://localhost:5000/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, language: 'javascript' }),
+        body: JSON.stringify({ code, language: selectedLanguage }),
       });
       const data = await response.json();
       setReport(data);
@@ -109,11 +135,15 @@ function App() {
   const health = getHealthScore();
 
   const isSplitLayout = currentView === 'login' || currentView === 'signup';
+  
+  // Check if user is on a logged-in page
+  const loggedInPages = ['dashboard', 'analyzer', 'history', 'rules', 'cicd', 'alerts', 'settings'];
+  const isOnLoggedInPage = loggedInPages.includes(currentView);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-500 selection:text-white flex flex-col w-full">
       
-      {!isSplitLayout && currentView !== 'dashboard' && <Navbar currentView={currentView} setCurrentView={changeView} isLoggedIn={isLoggedIn} />}
+      {!isSplitLayout && currentView !== 'dashboard' && <Navbar currentView={currentView} setCurrentView={changeView} isLoggedIn={isLoggedIn || isOnLoggedInPage} />}
 
       <main className={`grow w-full flex flex-col ${!isSplitLayout ? 'pb-24' : ''}`}>
         
@@ -334,12 +364,33 @@ function App() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                   <div className="flex flex-col bg-white rounded-2xl p-6 shadow-xs border border-slate-200 w-full">
-                    <label className="text-sm font-semibold text-slate-700 mb-3">Source Code Buffer</label>
+                    <div className="flex items-center justify-between mb-3">
+                      <label className="text-sm font-semibold text-slate-700">Source Code Buffer</label>
+                      <select
+                        value={selectedLanguage}
+                        onChange={(e) => {
+                          setSelectedLanguage(e.target.value);
+                        }}
+                        className="text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-indigo-100 transition"
+                      >
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                        <option value="cpp">C/C++</option>
+                        <option value="java">Java</option>
+                      </select>
+                    </div>
                     <textarea
                       className="w-full h-125 bg-slate-900 text-slate-100 font-mono text-sm p-5 rounded-xl border border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none shadow-inner"
-                      placeholder="// Paste JavaScript code here..."
+                      placeholder="// Paste your code here (JavaScript, Python, C++, Java)..."
                       value={code}
-                      onChange={(e) => setCode(e.target.value)}
+                      onChange={(e) => {
+                        setCode(e.target.value);
+                        // Auto-detect language as user types
+                        const detected = detectLanguage(e.target.value);
+                        if (detected !== selectedLanguage) {
+                          setSelectedLanguage(detected);
+                        }
+                      }}
                     />
                   </div>
 
@@ -535,6 +586,34 @@ function App() {
             {currentView === 'dashboard' && (
               <div className="w-full p-8 space-y-4">
                 <Dashboard setCurrentView={changeView} />
+              </div>
+            )}
+
+            {/* Rule Builder View */}
+            {currentView === 'rules' && (
+              <div className="w-full">
+                <RuleBuilder setCurrentView={changeView} />
+              </div>
+            )}
+
+            {/* CI/CD View */}
+            {currentView === 'cicd' && (
+              <div className="w-full">
+                <CICD setCurrentView={changeView} />
+              </div>
+            )}
+
+            {/* Alerts View */}
+            {currentView === 'alerts' && (
+              <div className="w-full">
+                <Alerts setCurrentView={changeView} />
+              </div>
+            )}
+
+            {/* Settings View */}
+            {currentView === 'settings' && (
+              <div className="w-full">
+                <Settings setCurrentView={changeView} />
               </div>
             )}
           </>
