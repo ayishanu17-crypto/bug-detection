@@ -19,7 +19,7 @@ export default function Settings() {
       </div>
 
       {/* API Key Management Box */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
+      <div className="bg-white p-6 border border-slate-200 space-y-4 rounded-lg">
         <div className="flex items-center space-x-3">
           <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><Key size={20} /></div>
           <div>
@@ -46,7 +46,7 @@ export default function Settings() {
       </div>
 
       {/* Workspace Collaborators */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
+      <div className="bg-white p-6 border border-slate-200 space-y-4 rounded-lg">
         <div className="flex items-center space-x-3">
           <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><Users size={20} /></div>
           <div>

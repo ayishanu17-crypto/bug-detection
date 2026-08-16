@@ -190,9 +190,7 @@ export default function Home({ setCurrentView }) {
           </button>
         </div>
       </section>
-    </div>
-  );
-}
+
       <section className="bg-slate-900 text-white py-24 px-6 my-16">
         <div className="max-w-6xl mx-auto space-y-16">
           <div className="text-center space-y-3 max-w-2xl mx-auto">
