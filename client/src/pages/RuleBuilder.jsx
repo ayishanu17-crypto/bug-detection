@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sliders, Plus, Check, Code2, Trash2 } from 'lucide-react';
+import { Sliders, Plus, Trash2 } from 'lucide-react';
 
 export default function RuleBuilder() {
   const [rules, setRules] = useState([
@@ -36,15 +36,16 @@ export default function RuleBuilder() {
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8">
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Custom AST Rule Studio</h1>
-        <p className="text-slate-500 text-sm">Define custom static analysis linting rules tailored to your team's architecture guidelines.</p>
+        <span className="brutal-tag mb-3">Rule Studio</span>
+        <h1 className="text-2xl font-extrabold text-ink tracking-tight">Custom AST Rule Studio</h1>
+        <p className="text-muted text-sm">Define custom static analysis linting rules tailored to your team's architecture guidelines.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Create Rule Form */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
-          <div className="flex items-center space-x-2 text-slate-900 font-bold">
-            <Sliders size={18} className="text-indigo-600" />
+        <div className="glass rounded-2xl p-6 space-y-4">
+          <div className="flex items-center space-x-2 text-ink font-bold">
+            <Sliders size={18} className="text-muted" />
             <span>Create New Rule</span>
           </div>
           <form onSubmit={handleAddRule} className="space-y-4">
@@ -84,7 +85,7 @@ export default function RuleBuilder() {
             </div>
             <button 
               type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-sm transition flex items-center justify-center space-x-2"
+              className="btn btn-primary btn-block"
             >
               <Plus size={16} />
               <span>Save Custom Rule</span>
@@ -93,11 +94,11 @@ export default function RuleBuilder() {
         </div>
 
         {/* Active Custom Rules List */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
+        <div className="lg:col-span-2 glass rounded-2xl p-6 space-y-4">
           <h3 className="font-bold text-slate-900">Active Custom Rules ({rules.length})</h3>
           <div className="space-y-3">
             {rules.map((rule) => (
-              <div key={rule.id} className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+              <div key={rule.id} className="p-4 bg-surface2 border border-line rounded-lg flex items-center justify-between">
                 <div className="space-y-1">
                   <div className="flex items-center space-x-2">
                     <span className="font-bold text-slate-800 text-sm">{rule.name}</span>

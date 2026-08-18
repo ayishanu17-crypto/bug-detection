@@ -8,9 +8,9 @@ import Settings from './pages/Settings';
 import CICD from './pages/CICD';
 import RuleBuilder from './pages/RuleBuilder';
 import Alerts from './pages/Alerts';
-import { 
-  Code, History, Lightbulb, ArrowRight, CheckCircle2, 
-  Zap, AlertTriangle, CheckCircle, Network, Terminal, User, LogOut, ShieldAlert, GitCompare, ShieldCheck, Sliders, Download, FileText, X, Play
+import {
+  Lightbulb, ArrowRight, AlertTriangle, CheckCircle, CheckCircle2,
+  Sliders, Download, FileText, X, Play, Sun, Moon
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -31,6 +31,30 @@ function App() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
+
+  // Light / dark minimalist theme
+  const [theme, setTheme] = useState(() => {
+    let initial = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    try {
+      const savedTheme = localStorage.getItem('debugique-theme');
+      if (savedTheme === 'dark' || savedTheme === 'light') initial = savedTheme;
+    } catch {
+      /* ignore */
+    }
+    document.documentElement.setAttribute('data-theme', initial);
+    return initial;
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    try {
+      localStorage.setItem('debugique-theme', theme);
+    } catch {
+      /* ignore */
+    }
+  }, [theme]);
+
+  const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
   
   const [activeRules, setActiveRules] = useState({
     noEval: true,
@@ -143,14 +167,22 @@ function App() {
   const isOnLoggedInPage = loggedInPages.includes(currentView);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-mono selection:bg-indigo-500 selection:text-white flex flex-col w-full">
+    <div className="relative min-h-screen text-ink selection:bg-accent selection:text-onaccent flex flex-col w-full">
+      {/* Animated layered background — feeds the glass & skeuomorphic depth */}
+      <div className="scene" aria-hidden="true">
+        <div className="blob blob-a"></div>
+        <div className="blob blob-b"></div>
+        <div className="blob blob-c"></div>
+        <div className="blob blob-d"></div>
+      </div>
       
       {!isSplitLayout && currentView !== 'dashboard' && (
         <Navbar 
           currentView={currentView} 
           setCurrentView={changeView} 
           isLoggedIn={isLoggedIn || isOnLoggedInPage} 
-          isMinimalist={true}
+          theme={theme}
+          toggleTheme={toggleTheme}
         />
       )}
 
@@ -158,29 +190,17 @@ function App() {
         
         {/* Split screen only for login/signup views */}
         {isSplitLayout ? (
-          <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-950">
-            <div className="bg-white p-8 sm:p-16 min-h-screen flex flex-col justify-between overflow-y-auto">
-              <div className="space-y-6 w-full max-w-xl mx-auto">
+          <div className="w-full min-h-screen">
+            <div className="min-h-screen flex items-center justify-center px-6 py-12">
+              <div className="w-full max-w-md space-y-5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold tracking-widest text-indigo-600 uppercase">Codeguard</span>
-                  <button onClick={() => changeView('home')} className="text-xs text-slate-500 hover:text-indigo-600 font-semibold">Back to Home</button>
+                  <button onClick={() => changeView('home')} className="text-sm font-semibold text-muted hover:text-ink transition-colors">← Back to Home</button>
+                  <button onClick={toggleTheme} className="theme-btn" aria-label="Toggle theme">
+                    {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                  </button>
                 </div>
                 {currentView === 'login' && <Login setCurrentView={changeView} onAuthSuccess={handleLoginSuccess} />}
                 {currentView === 'signup' && <Signup setCurrentView={changeView} onAuthSuccess={handleLoginSuccess} />}
-              </div>
-              <div className="w-full max-w-xl mx-auto text-xs text-slate-400 pt-6 border-t border-slate-100 flex justify-between items-center mt-4">
-                <span>Enterprise Workspace</span>
-                <span className="text-indigo-600 font-semibold">v2.4</span>
-              </div>
-            </div>
-
-            <div className="hidden lg:flex items-center justify-center p-12 bg-slate-950">
-              <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/10 shadow-2xl">
-                <img
-                  src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80"
-                  alt="Debugger interface on screen"
-                  className="h-full w-full object-cover"
-                />
               </div>
             </div>
           </div>
@@ -188,53 +208,98 @@ function App() {
           <>
             {/* Home View */}
             {currentView === 'home' && (
-              <div className="w-full max-w-4xl mx-auto py-12 px-6 space-y-12 animate-fadeIn">
-                <div className="space-y-4 text-center">
-                  <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-                    Debugique <span className="text-indigo-600">Static Analysis</span>
-                  </h1>
-                  <p className="text-slate-600 text-sm max-w-xl mx-auto">
-                    Analyze code syntax trees instantly using AST parser. Discover quality issues, security vulnerabilities, and apply immediate patches.
-                  </p>
-                  <div className="flex justify-center space-x-4 pt-4">
-                    <button
-                      onClick={() => changeView('analyzer')}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-lg text-sm flex items-center space-x-2 transition"
-                    >
-                      <span>Analyze Code</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => changeView('history')}
-                      className="bg-white hover:bg-slate-50 text-slate-700 font-semibold px-6 py-2.5 rounded-lg text-sm border border-slate-300 transition shadow-2xs"
-                    >
-                      View Database Logs
-                    </button>
-                  </div>
-                </div>
+              <div className="w-full max-w-6xl mx-auto px-6 pt-20 pb-10">
+                <div className="space-y-28">
 
-                <div className="border-t border-slate-200 pt-8">
-                  <h2 className="text-xl font-bold text-slate-900 mb-6">Core Capabilities</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="border border-slate-200 rounded-lg p-5 bg-white space-y-2">
-                      <h3 className="font-bold text-slate-900 text-sm">AST Parsing</h3>
-                      <p className="text-slate-600 text-xs leading-relaxed">
-                        Syntactic syntax analysis powered by the Acorn parser engine instead of basic string matches.
+                  {/* Hero — maximalist + spatial + skeuomorphic */}
+                  <section className="perspective grid lg:grid-cols-2 gap-14 items-center">
+                    <div className="space-y-7 preserve-3d">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="brutal-tag">AST Static Analysis</span>
+                        <span className="badge bg-accent text-white">v2.4 · Acorn Engine</span>
+                      </div>
+                      <h1 className="text-5xl sm:text-6xl font-black tracking-tighter text-ink leading-[1.04]">
+                        Debug <span className="brutal-text text-accent">code</span> faster<br />
+                        than ever before
+                      </h1>
+                      <p className="text-lg text-muted max-w-lg leading-relaxed">
+                        Analyze architecture, catch vulnerabilities with Abstract Syntax Trees, and apply instant fixes — for JS, Python, C/C++ and Java.
                       </p>
+                      <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                        <button onClick={() => changeView('analyzer')} className="btn btn-clay-accent">
+                          <span>Start Analyzing Code</span>
+                          <ArrowRight size={16} />
+                        </button>
+                        <button onClick={() => changeView('history')} className="btn btn-glass">
+                          View Scan History
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-4 pt-2">
+                        <span className="neo px-4 py-2 text-xs font-bold text-ink">12k+ scans</span>
+                        <span className="neo px-4 py-2 text-xs font-bold text-ink">4 languages</span>
+                        <span className="neo px-4 py-2 text-xs font-bold text-ink">AST-powered</span>
+                      </div>
                     </div>
-                    <div className="border border-slate-200 rounded-lg p-5 bg-white space-y-2">
-                      <h3 className="font-bold text-slate-900 text-sm">Actionable Patches</h3>
-                      <p className="text-slate-600 text-xs leading-relaxed">
-                        Get immediate recommendations for bug fixes and import them directly into your buffer.
-                      </p>
+
+                    <div className="preserve-3d float-slow">
+                      <div className="skeuo-win tilt">
+                        <div className="window-chrome">
+                          <span className="dot dot-red"></span>
+                          <span className="dot dot-yellow"></span>
+                          <span className="dot dot-green"></span>
+                          <span className="ml-3 text-[11px] font-mono text-[var(--editor-muted)]">analyzer.js — Debugique</span>
+                        </div>
+                        <div className="p-5 font-mono text-xs leading-relaxed text-[var(--editor-ink)]">
+                          <p><span className="text-[#ff7b72]">const</span> <span className="text-[#79c0ff]">scan</span> <span className="text-[#ff7b72]">=</span> <span className="text-[#ffa657]">(code)</span> <span className="text-[#ff7b72]">=&gt;</span> <span className="text-[#ff7b72]">{'{'}</span></p>
+                          <p className="pl-4"><span className="text-[#ff7b72]">const</span> <span className="text-[#79c0ff]">tree</span> <span className="text-[#ff7b72]">=</span> <span className="text-[#79c0ff]">acorn</span>.<span className="text-[#d2a8ff]">parse</span>(code);</p>
+                          <p className="pl-4"><span className="text-[#79c0ff]">report</span> <span className="text-[#ff7b72]">=</span> <span className="text-[#d2a8ff]">analyze</span>(tree);</p>
+                          <p><span className="text-[#ff7b72]">{'}'}</span> <span className="text-[#8b949e]">// 0 vulnerabilities</span></p>
+                        </div>
+                        <div className="statusbar">
+                          <span>JavaScript</span>
+                          <span className="text-[#3fb950]">✓ 3 checks passed</span>
+                          <span>Acorn v9</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="border border-slate-200 rounded-lg p-5 bg-white space-y-2">
-                      <h3 className="font-bold text-slate-900 text-sm">Scan History</h3>
-                      <p className="text-slate-600 text-xs leading-relaxed">
-                        Every run is persistently logged to MongoDB for easy audit history and analysis tracking.
-                      </p>
+                  </section>
+
+                  {/* Features — claymorphism */}
+                  <section className="space-y-8">
+                    <div className="flex items-end justify-between gap-4">
+                      <div>
+                        <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-ink">Core capabilities</h2>
+                        <p className="text-muted mt-2 max-w-xl">Everything you need to catch bugs and refactor code seamlessly.</p>
+                      </div>
+                      <span className="brutal-tag hidden sm:inline-flex">3 pillars</span>
                     </div>
-                  </div>
+                    <div className="grid md:grid-cols-3 gap-7">
+                      {[
+                        { icon: CheckCircle2, title: 'AST Parsing', desc: 'Syntax analysis powered by the Acorn parser engine instead of basic string matching.' },
+                        { icon: Lightbulb, title: 'Actionable Patches', desc: 'Immediate bug-fix recommendations you can import straight into your buffer.' },
+                        { icon: FileText, title: 'Scan History', desc: 'Every run persisted to MongoDB for easy auditing and tracking.' }
+                      ].map((item, i) => (
+                        <div key={i} className="clay p-7 space-y-4 tilt">
+                          <span className="flex items-center justify-center w-12 h-12 rounded-2xl clay-accent">
+                            <item.icon size={20} />
+                          </span>
+                          <h3 className="font-bold text-ink text-lg">{item.title}</h3>
+                          <p className="text-muted text-sm leading-relaxed">{item.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  {/* CTA band — brutalism */}
+                  <section className="brutal brutal-accent p-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div>
+                      <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">Ready to run your first scan?</h2>
+                      <p className="text-white/80 mt-1 text-sm">Paste a snippet and get an executive security report in seconds.</p>
+                    </div>
+                    <button onClick={() => changeView('analyzer')} className="btn btn-brutal shrink-0">
+                      Open the Analyzer
+                    </button>
+                  </section>
                 </div>
               </div>
             )}
@@ -242,7 +307,7 @@ function App() {
             {/* Analyzer View */}
             {currentView === 'analyzer' && (
               <div className="w-full max-w-6xl mx-auto px-6 py-8 space-y-4 relative">
-                <div className="bg-white p-5 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full rounded-lg">
+                <div className="liquid p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full rounded-2xl">
                   <div className="flex items-center space-x-3">
                     <div>
                       <h2 className="font-bold text-slate-900 text-base">Interactive AST Code Analyzer</h2>
@@ -259,7 +324,7 @@ function App() {
                     <button
                       onClick={handleAnalyze}
                       disabled={loading}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-3 py-1.5 rounded-lg text-xs flex items-center space-x-1.5 transition"
+                      className="btn btn-clay-accent btn-sm"
                     >
                       {loading ? (
                         <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -271,7 +336,7 @@ function App() {
 
                     <button
                       onClick={() => setShowRulesModal(true)}
-                      className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded-lg text-xs flex items-center space-x-1.5 transition border border-slate-200"
+                      className="btn btn-glass btn-sm"
                     >
                       <Sliders size={12} />
                       <span>Configure Rules</span>
@@ -280,7 +345,7 @@ function App() {
                     {report && (
                       <button
                         onClick={() => setShowExportModal(true)}
-                        className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold px-3 py-1.5 rounded-lg text-xs flex items-center space-x-1.5 transition border border-emerald-200"
+                        className="btn btn-brutal btn-sm"
                       >
                         <Download size={12} />
                         <span>Export</span>
@@ -290,15 +355,18 @@ function App() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                  <div className="flex flex-col bg-white p-5 border border-slate-200 w-full rounded-lg">
-                    <div className="flex items-center justify-between mb-3">
-                      <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Source Code Buffer</label>
+                  <div className="skeuo-win flex flex-col w-full">
+                    <div className="window-chrome">
+                      <span className="dot dot-red"></span>
+                      <span className="dot dot-yellow"></span>
+                      <span className="dot dot-green"></span>
+                      <span className="ml-3 text-[11px] font-mono text-[var(--editor-muted)]">buffer.js</span>
                       <select
                         value={selectedLanguage}
                         onChange={(e) => {
                           setSelectedLanguage(e.target.value);
                         }}
-                        className="text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-indigo-100 transition"
+                        className="ml-auto text-[11px] font-mono font-semibold bg-transparent text-[var(--editor-ink)] outline-none cursor-pointer border border-[var(--editor-line)] rounded px-2 py-0.5"
                       >
                         <option value="javascript">JavaScript</option>
                         <option value="python">Python</option>
@@ -307,7 +375,7 @@ function App() {
                       </select>
                     </div>
                     <textarea
-                      className="w-full h-125 bg-slate-900 text-slate-100 font-mono text-sm p-5 border border-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none rounded-lg"
+                      className="w-full h-125 font-mono text-sm p-5 resize-none bg-[var(--editor-bg)] text-[var(--editor-ink)] placeholder-[var(--editor-muted)] focus:outline-none focus:ring-1 focus:ring-accent"
                       placeholder="// Paste your code here (JavaScript, Python, C++, Java)..."
                       value={code}
                       onChange={(e) => {
@@ -319,15 +387,20 @@ function App() {
                         }
                       }}
                     />
+                    <div className="statusbar">
+                      <span>{selectedLanguage} · Acorn AST</span>
+                      <span>Ln 1, Col 1</span>
+                      <span>UTF-8</span>
+                    </div>
                   </div>
 
-                  <div className="flex flex-col bg-white p-5 border border-slate-200 w-full rounded-lg">
+                  <div className="flex flex-col liquid p-5 w-full rounded-2xl">
                     <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">Discovered Issues & Patches</h2>
+                      <h2 className="text-xs font-bold uppercase tracking-wider text-muted">Discovered Issues & Patches</h2>
                       {report && <span className="text-xs font-medium text-slate-500">Total: {report.totalIssues}</span>}
                     </div>
 
-                    <div className="w-full cd bg-slate-50 border border-slate-200 p-4 overflow-y-auto rounded-lg">
+                    <div className="w-full bg-surface2/70 border border-line p-4 overflow-y-auto rounded-xl">
                       {!report ? (
                         <div className="h-full flex flex-col items-center justify-center text-slate-400 text-sm text-center px-4">
                           <AlertTriangle className="w-8 h-8 mb-2 opacity-50 text-indigo-500" />
@@ -344,7 +417,7 @@ function App() {
                             <div 
                               key={index} 
                               onClick={() => setSelectedIssue(issue)}
-                              className="bg-white border border-slate-200 hover:border-indigo-300 rounded-lg p-4 shadow-2xs text-sm space-y-1.5 cursor-pointer transition"
+                              className="card hover:border-linestrong hover:-translate-y-0.5 p-4 text-sm space-y-1.5 cursor-pointer transition"
                             >
                               <div className="flex items-center justify-between">
                                 <span className="font-bold text-slate-800 text-xs">Line {issue.line}: {issue.ruleName}</span>
@@ -360,8 +433,8 @@ function App() {
                 </div>
 
                 {selectedIssue && (
-                  <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-end justify-center">
-                    <div className="bg-white rounded-t-3xl p-6 max-w-xl w-full space-y-4 shadow-2xl border-t border-slate-200">
+                  <div className="fixed inset-0 bg-[#000]/50 z-50 flex items-end justify-center">
+                    <div className="liquid rounded-t-3xl p-6 max-w-xl w-full space-y-4">
                       <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                         <div>
                           <span className="text-[11px] text-indigo-600 font-bold uppercase tracking-wider">Line {selectedIssue.line} Violation</span>
@@ -372,19 +445,19 @@ function App() {
 
                       <p className="text-xs text-slate-600 leading-relaxed">{selectedIssue.message}</p>
 
-                      <div className="bg-indigo-50/70 border border-indigo-100 rounded-xl p-3.5 space-y-2">
-                        <div className="flex items-center space-x-1.5 text-xs font-bold text-indigo-700">
-                          <Lightbulb size={14} />
+                      <div className="glass rounded-xl p-3.5 space-y-2">
+                        <div className="flex items-center space-x-1.5 text-xs font-bold text-ink">
+                          <Lightbulb size={14} className="text-accent" />
                           <span>Suggested Auto-Fix Patch:</span>
                         </div>
-                        <pre className="text-[11px] text-slate-700 font-mono bg-white p-2.5 rounded-lg border border-indigo-100 overflow-x-auto">
+                        <pre className="text-[11px] text-ink2 font-mono bg-surface p-2.5 rounded-lg border border-line overflow-x-auto">
                           {selectedIssue.suggestedFix}
                         </pre>
                       </div>
 
                       <button
                         onClick={() => handleApplyFix(selectedIssue.suggestedFix)}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl text-xs transition shadow"
+                        className="btn btn-clay-accent btn-block"
                       >
                         Apply Patch to Editor Buffer
                       </button>
@@ -393,8 +466,8 @@ function App() {
                 )}
 
                 {showRulesModal && (
-                  <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl p-6 max-w-md w-full space-y-6 shadow-2xl border border-slate-200">
+                  <div className="fixed inset-0 bg-[#000]/50 z-50 flex items-center justify-center p-4">
+                    <div className="liquid rounded-2xl p-6 max-w-md w-full space-y-6">
                       <div className="flex items-center justify-between">
                         <h3 className="font-bold text-slate-900 text-base flex items-center space-x-2">
                           <Sliders size={18} className="text-indigo-600" />
@@ -405,7 +478,7 @@ function App() {
                       
                       <div className="space-y-3">
                         {Object.keys(activeRules).map((ruleKey) => (
-                          <label key={ruleKey} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer text-xs">
+                          <label key={ruleKey} className="flex items-center justify-between p-3 bg-surface2/70 rounded-xl border border-line cursor-pointer text-xs">
                             <span className="font-bold font-mono text-slate-700 capitalize">{ruleKey.replace(/([A-Z])/g, ' $1')}</span>
                             <input
                               type="checkbox"
@@ -419,7 +492,7 @@ function App() {
 
                       <button
                         onClick={() => setShowRulesModal(false)}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-sm transition"
+                        className="btn btn-primary btn-block"
                       >
                         Save Rule Configuration
                       </button>
@@ -428,8 +501,8 @@ function App() {
                 )}
 
                 {showExportModal && (
-                  <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl p-6 max-w-lg w-full space-y-6 shadow-2xl border border-slate-200">
+                  <div className="fixed inset-0 bg-[#000]/50 z-50 flex items-center justify-center p-4">
+                    <div className="liquid rounded-2xl p-6 max-w-lg w-full space-y-6">
                       <div className="flex items-center justify-between">
                         <h3 className="font-bold text-slate-900 text-base flex items-center space-x-2">
                           <FileText size={18} className="text-emerald-600" />
@@ -438,7 +511,7 @@ function App() {
                         <button onClick={() => setShowExportModal(false)} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
                       </div>
                       
-                      <div className="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs font-mono">
+                      <div className="space-y-2 bg-surface2/70 p-4 rounded-xl border border-line text-xs font-mono">
                         <p className="text-slate-600">Scan Timestamp: {new Date().toLocaleString()}</p>
                         <p className="text-slate-600">Health Rating Score: <strong className="text-slate-900">{health.grade}</strong></p>
                         <p className="text-slate-600">Total Vulnerabilities: <strong className="text-slate-900">{report?.totalIssues || 0}</strong></p>
@@ -454,14 +527,14 @@ function App() {
                             dl.click();
                             setShowExportModal(false);
                           }}
-                          className="grow bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl text-sm transition flex items-center justify-center space-x-2"
+                          className="grow btn btn-brutal"
                         >
                           <Download size={16} />
                           <span>Download JSON Report</span>
                         </button>
                         <button
                           onClick={() => setShowExportModal(false)}
-                          className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-4 py-2.5 rounded-xl text-sm transition"
+                          className="btn btn-ghost"
                         >
                           Close
                         </button>
@@ -475,14 +548,14 @@ function App() {
             {/* History View */}
             {currentView === 'history' && (
               <div className="w-full p-8 space-y-4">
-                <div className="bg-white rounded-2xl p-6 shadow-xs border border-slate-200 w-full">
+                <div className="liquid rounded-2xl p-6 w-full">
                   <h2 className="text-lg font-bold text-slate-800 mb-4">Past Scans Database Log</h2>
                   {history.length === 0 ? (
                     <p className="text-slate-500 text-sm">No past scans found in MongoDB.</p>
                   ) : (
                     <div className="space-y-3">
                       {history.map((scan) => (
-                        <div key={scan._id} className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center justify-between w-full">
+                        <div key={scan._id} className="card p-4 rounded-xl flex items-center justify-between w-full">
                           <div>
                             <p className="text-xs text-slate-400 mb-1">Scanned at: {new Date(scan.createdAt).toLocaleString()}</p>
                             <p className="text-sm font-mono text-slate-700 truncate max-w-2xl">{scan.codeSnippet}</p>
@@ -503,42 +576,42 @@ function App() {
             {/* Dashboard View */}
             {currentView === 'dashboard' && (
               <div className="w-full max-w-6xl mx-auto px-6 py-8">
-                <Dashboard setCurrentView={changeView} isMinimalist={true} />
+                <Dashboard setCurrentView={changeView} theme={theme} toggleTheme={toggleTheme} />
               </div>
             )}
 
             {/* Rule Builder View */}
             {currentView === 'rules' && (
               <div className="w-full">
-                <RuleBuilder setCurrentView={changeView} isMinimalist={true} />
+                <RuleBuilder setCurrentView={changeView} />
               </div>
             )}
 
             {/* CI/CD View */}
             {currentView === 'cicd' && (
               <div className="w-full">
-                <CICD setCurrentView={changeView} isMinimalist={true} />
+                <CICD setCurrentView={changeView} />
               </div>
             )}
 
             {/* Alerts View */}
             {currentView === 'alerts' && (
               <div className="w-full">
-                <Alerts setCurrentView={changeView} isMinimalist={true} />
+                <Alerts setCurrentView={changeView} />
               </div>
             )}
 
             {/* Settings View */}
             {currentView === 'settings' && (
               <div className="w-full">
-                <Settings setCurrentView={changeView} isMinimalist={true} />
+                <Settings setCurrentView={changeView} />
               </div>
             )}
           </>
         )}
       </main>
 
-      {!isSplitLayout && currentView !== 'dashboard' && <Footer isMinimalist={true} />}
+      {!isSplitLayout && currentView !== 'dashboard' && <Footer />}
     </div>
   );
 }

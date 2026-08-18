@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Key, Copy, Check, Shield, Globe, Users, Save } from 'lucide-react';
+import { Key, Copy, Check, Users } from 'lucide-react';
 
 export default function Settings() {
   const [copied, setCopied] = useState(false);
@@ -14,14 +14,15 @@ export default function Settings() {
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8">
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Workspace Settings</h1>
-        <p className="text-slate-500 text-sm">Manage your developer API tokens, workspace configurations, and security policies.</p>
+        <span className="brutal-tag mb-3">Configuration</span>
+        <h1 className="text-2xl font-extrabold text-ink tracking-tight">Workspace Settings</h1>
+        <p className="text-muted text-sm">Manage your developer API tokens, workspace configurations, and security policies.</p>
       </div>
 
       {/* API Key Management Box */}
-      <div className="bg-white p-6 border border-slate-200 space-y-4 rounded-lg">
+      <div className="glass rounded-2xl p-6 space-y-4">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><Key size={20} /></div>
+          <div className="p-2 bg-surface2 text-muted rounded-lg"><Key size={20} /></div>
           <div>
             <h3 className="font-bold text-slate-900">Developer API Key</h3>
             <p className="text-slate-500 text-xs">Use this bearer token to trigger automated AST scans via our CLI or API endpoints.</p>
@@ -37,7 +38,7 @@ export default function Settings() {
           />
           <button 
             onClick={handleCopy}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center space-x-2 shrink-0"
+            className="btn btn-primary"
           >
             {copied ? <Check size={16} /> : <Copy size={16} />}
             <span>{copied ? 'Copied!' : 'Copy Key'}</span>
@@ -46,9 +47,9 @@ export default function Settings() {
       </div>
 
       {/* Workspace Collaborators */}
-      <div className="bg-white p-6 border border-slate-200 space-y-4 rounded-lg">
+      <div className="glass rounded-2xl p-6 space-y-4">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><Users size={20} /></div>
+          <div className="p-2 bg-surface2 text-muted rounded-lg"><Users size={20} /></div>
           <div>
             <h3 className="font-bold text-slate-900">Team Collaborators</h3>
             <p className="text-slate-500 text-xs">Invite engineering teammates to review shared MongoDB logs and telemetry.</p>
@@ -63,7 +64,7 @@ export default function Settings() {
           />
           <button 
             onClick={() => alert('Invitation sent successfully!')}
-            className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shrink-0"
+            className="btn btn-ghost shrink-0"
           >
             Invite Member
           </button>

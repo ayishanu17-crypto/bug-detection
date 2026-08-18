@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Terminal, Copy, Check, GitBranch } from 'lucide-react';
+import { Terminal, Copy, Check } from 'lucide-react';
 
 export default function CICD() {
   const [copied, setCopied] = useState(false);
@@ -35,22 +35,27 @@ jobs:
         <p className="text-slate-500 text-sm">Embed automated Abstract Syntax Tree code validation directly into your GitHub Actions workflow.</p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
-        <div className="bg-slate-900 px-6 py-4 flex items-center justify-between text-white">
+      <div className="card overflow-hidden">
+        <div className="editor px-6 py-4 flex items-center justify-between gap-3">
           <div className="flex items-center space-x-2">
-            <Terminal size={18} className="text-indigo-400" />
+            <span className="flex items-center gap-1.5 mr-2">
+              <span className="dot dot-red"></span>
+              <span className="dot dot-yellow"></span>
+              <span className="dot dot-green"></span>
+            </span>
+            <Terminal size={18} className="opacity-70" />
             <span className="text-xs font-mono">.github/workflows/debugique.yml</span>
           </div>
-          <button 
+          <button
             onClick={handleCopy}
-            className="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center space-x-1.5 transition"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold border border-[var(--editor-line)] text-[var(--editor-ink)] hover:bg-white/10 transition"
           >
-            {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+            {copied ? <Check size={14} className="text-ok" /> : <Copy size={14} />}
             <span>{copied ? 'Copied Workflow' : 'Copy Code'}</span>
           </button>
         </div>
-        <div className="p-6 bg-slate-950 overflow-x-auto">
-          <pre className="text-indigo-300 font-mono text-xs leading-relaxed">
+        <div className="editor p-6 overflow-x-auto">
+          <pre className="font-mono text-xs leading-relaxed">
             {workflowCode}
           </pre>
         </div>

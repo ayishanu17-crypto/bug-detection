@@ -1,39 +1,56 @@
-import { ShieldAlert, ChevronDown } from 'lucide-react';
+import { ShieldAlert, Sun, Moon } from 'lucide-react';
 
-export default function Navbar({ setCurrentView, isLoggedIn }) {
+const NAV_LINKS = [
+  { view: 'analyzer', label: 'Analyzer' },
+  { view: 'history', label: 'History' },
+  { view: 'rules', label: 'Rules' },
+  { view: 'cicd', label: 'CI/CD' },
+  { view: 'alerts', label: 'Alerts' },
+  { view: 'settings', label: 'Settings' },
+];
+
+export default function Navbar({ setCurrentView, isLoggedIn, theme, toggleTheme, currentView }) {
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200">
-      <div className="absolute inset-0 bg-white"></div>
-      <div className="relative max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center space-x-8">
-          <div 
-            className="flex items-center space-x-3 cursor-pointer" 
+    <header className="sticky top-0 z-50 glass border-b border-white/40">
+      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-6 min-w-0">
+          <button
             onClick={() => setCurrentView('home')}
+            className="flex items-center gap-2.5 shrink-0"
+            aria-label="Debugique home"
           >
-            <div className="bg-indigo-50 p-2 rounded text-indigo-600">
-              <ShieldAlert size={20} />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-bold tracking-tight text-slate-900 leading-none">Debugique</span>
-              <span className="text-[10px] text-slate-500 font-semibold">Code Intelligence</span>
-            </div>
-          </div>
+            <span className="clay-accent flex items-center justify-center w-9 h-9 rounded-xl">
+              <ShieldAlert size={18} />
+            </span>
+            <span className="text-lg font-bold tracking-tight text-ink leading-none">Debugique</span>
+          </button>
+          {isLoggedIn && (
+            <nav className="hidden md:flex items-center gap-1 overflow-x-auto">
+              {NAV_LINKS.map((item) => (
+                <button
+                  key={item.view}
+                  onClick={() => setCurrentView(item.view)}
+                  className={`navlink ${currentView === item.view ? 'active' : ''}`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </nav>
+          )}
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={toggleTheme}
+            className="theme-btn"
+            title="Toggle light/dark theme"
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
           {!isLoggedIn && (
             <>
-              <button 
-                onClick={() => setCurrentView('login')} 
-                className="text-sm font-semibold transition-all duration-300 px-4 py-2 rounded-lg text-slate-600 hover:text-indigo-600"
-              >
-                Log In
-              </button>
-              <button 
-                onClick={() => setCurrentView('signup')} 
-                className="text-sm font-bold px-5 py-2.5 rounded-lg transition-all duration-300 bg-indigo-600 text-white"
-              >
-                Get started
-              </button>
+              <button onClick={() => setCurrentView('login')} className="btn btn-glass">Log In</button>
+              <button onClick={() => setCurrentView('signup')} className="btn btn-clay-accent">Get started</button>
             </>
           )}
         </div>
