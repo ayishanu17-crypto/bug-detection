@@ -1,4 +1,6 @@
 require('dotenv').config();
+const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -7,6 +9,7 @@ const cors = require('cors');
 const { analyzeJavaScript } = require('./analyzers/jsAnalyzer'); // JavaScript (Acorn AST)
 const { analyzePython } = require('./analyzers/pyAnalyzer');
 const { analyzeCCpp } = require('./analyzers/ccppAnalyzer');
+const { analyzeJava } = require('./analyzers/javaAnalyzer');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -68,14 +71,13 @@ app.get('/api/health', (req, res) => {
 });
 
 // Map the language sent by the frontend to the right analyzer.
-// (Java has no dedicated analyzer yet, so it falls back to the JS rules.)
 const ANALYZERS = {
   javascript: analyzeJavaScript,
   python: analyzePython,
   cpp: analyzeCCpp,
   c: analyzeCCpp,
   ccpp: analyzeCCpp,
-  java: analyzeJavaScript
+  java: analyzeJava
 };
 
 /* -------------------------------------------------------------------------
@@ -133,6 +135,23 @@ app.get('/api/history', async (req, res) => {
     res.status(200).json([]);
   }
 });
+
+/* -------------------------------------------------------------------------
+ * Serve the built React frontend (client/dist) from the same process,
+ * so deployment = starting ONE server on ONE port. Build it once with
+ * `npm run build --prefix client` (start.bat does this automatically).
+ * ---------------------------------------------------------------------- */
+const clientDist = path.join(__dirname, '..', 'client', 'dist');
+if (fs.existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  // SPA fallback — any non-API GET serves the index.html shell
+  app.get(/^\/(?!api\/).*/, (req, res) => {
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+  console.log('✅ Serving built frontend from client/dist');
+} else {
+  console.warn('⚠️  client/dist not found. Run `npm run build --prefix client` to serve the frontend from Express.');
+}
 
 // Start Server
 app.listen(PORT, () => {

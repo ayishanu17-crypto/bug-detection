@@ -10,7 +10,7 @@ import RuleBuilder from './pages/RuleBuilder';
 import Alerts from './pages/Alerts';
 import {
   Lightbulb, ArrowRight, AlertTriangle, CheckCircle, CheckCircle2,
-  Sliders, Download, FileText, X, Play, Sun, Moon
+  Sliders, Download, FileText, X, Play, Sun, Moon, Copy, Sparkles
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -129,27 +129,34 @@ function App() {
 
   // Detect programming language from code content
   const detectLanguage = (codeText) => {
-    if (!codeText.trim()) return 'javascript';
-    
-    const lowerCode = codeText.toLowerCase();
-    
-    // Python indicators
-    if (lowerCode.includes('def ') || lowerCode.includes('import ') || lowerCode.includes('from ') || lowerCode.includes('print(') || lowerCode.includes('class ') && !lowerCode.includes('{')) {
-      return 'python';
-    }
-    
-    // C/C++ indicators
-    if (lowerCode.includes('#include') || lowerCode.includes('::') || lowerCode.includes('std::')) {
-      return 'cpp';
-    }
-    
-    // Java indicators
-    if (lowerCode.includes('public class ') || lowerCode.includes('public static') || lowerCode.includes('import java')) {
-      return 'java';
-    }
-    
-    // Default to JavaScript
-    return 'javascript';
+    const trimmedText = (codeText || '').trim();
+    if (!trimmedText) return selectedLanguage;
+
+    const lower = trimmedText.toLowerCase();
+
+    // ---------- Strong, unambiguous signals ----------
+    if (/^\s*#\s*include/.test(lower)) return 'cpp';                          // #include <iostream>
+    if (/\b(std::|iostream|namespace\s+\w+\s*\{|\.hpp\b)/.test(lower)) return 'cpp';
+    if (/\b(public\s+static\s+void\s+main|System\.(out|in)|import\s+(javax?|static\s+java)\.)/.test(lower)) return 'java';
+    if (/\bpublic\s+(abstract\s+|final\s+)?class\s+\w+/.test(lower)) return 'java';
+    if (/\b(def|class)\s+\w+/.test(lower) && /:\s*$/.test(lower)) return 'python';
+    if (/(^|\n)\s*(def|import|from|elif|else|except|finally|with)\b/.test(lower) && !/\b(import\s+java)/.test(lower)) return 'python';
+    if (/\b(print|input|range|len|isinstance)\s*\(/.test(lower)) return 'python';
+
+    // ---------- Scored fallback ----------
+    const scores = { javascript: 0, python: 0, cpp: 0, java: 0 };
+
+    if (/\b(const|let|var|function|=>|typedef|declare)\b/.test(lower)) scores.javascript += 3;
+    if (/(console\.log|document\.|window\.|addEventListener|import\s+.*\s+from\s+['"])/.test(lower)) scores.javascript += 3;
+
+    if (/\b(printf|cout|cin|cerr)\b/.test(lower)) scores.cpp += 4;
+    if (/\b(int|float|double|char|long|short|unsigned|signed|bool|void|struct|typedef|union)\b/.test(lower) && /;/.test(lower)) scores.cpp += 2;
+
+    if (/:\s*$/.test(lower) && !/[{};]/.test(trimmedText) && !/\b(int|float|double|char|bool|void)\b/.test(lower)) scores.python += 2;
+    if (/^\s*#\s*\w/.test(lower) && !/^#\s*include/.test(lower)) scores.python += 1;   // '#' comments in Python
+
+    const best = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
+    return best[1] > 0 ? best[0] : 'javascript';
   };
 
   const handleAnalyze = async () => {
@@ -189,6 +196,17 @@ function App() {
     setCode(suggestedFix);
     setSelectedIssue(null);
     alert('Fix applied to code editor buffer!');
+  };
+
+  const copyText = (text) => {
+    if (!text) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => alert('Copied to clipboard!'))
+        .catch(() => alert('Could not copy to clipboard.'));
+    } else {
+      alert('Clipboard access is unavailable in this browser.');
+    }
   };
 
   const getHealthScore = () => {
@@ -448,7 +466,7 @@ function App() {
                       }}
                     />
                     <div className="statusbar">
-                      <span>{selectedLanguage} · Acorn AST</span>
+                      <span>{selectedLanguage}{report && report.engine ? ` · ${report.engine}` : ' · Ready'}</span>
                       <span>Ln 1, Col 1</span>
                       <span>UTF-8</span>
                     </div>
@@ -491,6 +509,37 @@ function App() {
                     </div>
                   </div>
                 </div>
+
+                {/* Corrected Program panel — shown when the analyzer generated a fixed version */}
+                {report && report.correctedCode && report.correctedCode !== code && (
+                  <div className="glass rounded-2xl p-5 w-full space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <Sparkles size={16} className="text-accent" />
+                        <h3 className="text-sm font-bold uppercase tracking-wider text-muted">Corrected Program</h3>
+                      </div>
+                      {report.engine && <span className="text-[11px] font-mono text-slate-500">engine: {report.engine}</span>}
+                    </div>
+                    <pre className="text-xs font-mono text-[var(--editor-ink)] bg-[var(--editor-bg)] p-4 rounded-xl border border-line overflow-x-auto max-h-80 overflow-y-auto whitespace-pre-wrap">
+                      {report.correctedCode}
+                    </pre>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleApplyFix(report.correctedCode)}
+                        className="btn btn-clay-accent btn-sm"
+                      >
+                        Apply Corrected Code to Editor
+                      </button>
+                      <button
+                        onClick={() => copyText(report.correctedCode)}
+                        className="btn btn-glass btn-sm"
+                      >
+                        <Copy size={12} />
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {selectedIssue && (
                   <div className="fixed inset-0 bg-[#000]/50 z-50 flex items-end justify-center">
@@ -671,7 +720,7 @@ function App() {
         )}
       </main>
 
-      {!isSplitLayout && currentView !== 'dashboard' && <Footer />}
+      <Footer />
     </div>
   );
 }
