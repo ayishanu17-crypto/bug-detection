@@ -17,12 +17,35 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// 1. Connect to MongoDB Atlas
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB Atlas successfully!'))
-  .catch((error) => console.error('MongoDB connection error:', error));
+/* -------------------------------------------------------------------------
+ * MongoDB connection (non-fatal)
+ * The API keeps working even when the database is unreachable — analysis is
+ * pure computation. History persistence is simply skipped while the DB is
+ * down, and the connection retries automatically in the background.
+ * ---------------------------------------------------------------------- */
+const MONGODB_URI = process.env.MONGODB_URI;
 
-// 2. Define MongoDB Schema & Model for Scan History
+if (!MONGODB_URI) {
+  console.error('❌ MONGODB_URI is not set (is backend/.env missing?).');
+  console.error('   Running WITHOUT database persistence — scan history will not be saved.');
+} else {
+  const connectWithRetry = () => {
+    const state = mongoose.connection.readyState;
+    // 1 = connected, 2 = connecting — nothing to do
+    if (state === 1 || state === 2) return;
+
+    mongoose.connect(MONGODB_URI, { serverSelectionTimeoutMS: 10000 })
+      .then(() => console.log('✅ Connected to MongoDB Atlas successfully!'))
+      .catch((error) => {
+        console.error('❌ MongoDB connection error:', error.message);
+        console.error('   Retrying in 15 seconds…');
+        setTimeout(connectWithRetry, 15000);
+      });
+  };
+  connectWithRetry();
+}
+
+// MongoDB Schema & Model for Scan History
 const scanSchema = new mongoose.Schema({
     codeSnippet: { type: String, required: true },
     language: { type: String, default: 'javascript' },
@@ -33,45 +56,85 @@ const scanSchema = new mongoose.Schema({
 
 const Scan = mongoose.model('Scan', scanSchema);
 
-// 3. Analyze Route (Routes based on selected language)
-app.post('/api/analyze', async (req, res) => {
-    try {
-        const { code, language } = req.body;
-        
-        if (!code) {
-            return res.status(400).json({ error: 'No code provided.' });
-        }
-
-        const analysisResult = analyzeJavaScript(code);
-
-        // Save scan result to MongoDB Atlas
-        const newScan = new Scan({
-            codeSnippet: code,
-            language: 'javascript',
-            totalIssues: analysisResult.totalIssues,
-            issuesFound: analysisResult.issuesFound
-        });
-        await newScan.save();
-
-        res.status(200).json(analysisResult);
-    } catch (error) {
-        console.error('Analysis error:', error);
-        res.status(500).json({ error: error.message || 'Server error during code analysis.' });
-    }
+/* -------------------------------------------------------------------------
+ * Health check — lets the frontend know the server is reachable.
+ * ---------------------------------------------------------------------- */
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    time: new Date().toISOString()
+  });
 });
 
-// 4. History Route
-app.get('/api/history', async (req, res) => {
-    try {
-        const history = await Scan.find().sort({ createdAt: -1 }).limit(20);
-        res.status(200).json(history);
-    } catch (error) {
-        console.error('History fetch error:', error);
-        res.status(500).json({ error: 'Server error fetching history.' });
+// Map the language sent by the frontend to the right analyzer.
+// (Java has no dedicated analyzer yet, so it falls back to the JS rules.)
+const ANALYZERS = {
+  javascript: analyzeJavaScript,
+  python: analyzePython,
+  cpp: analyzeCCpp,
+  c: analyzeCCpp,
+  ccpp: analyzeCCpp,
+  java: analyzeJavaScript
+};
+
+/* -------------------------------------------------------------------------
+ * Analyze route — routes to the analyzer matching the selected language.
+ * ---------------------------------------------------------------------- */
+app.post('/api/analyze', async (req, res) => {
+  try {
+    const { code, language } = req.body;
+
+    if (!code || !String(code).trim()) {
+      return res.status(400).json({ error: 'No code provided.' });
     }
+
+    const lang = String(language || 'javascript').toLowerCase();
+    const analyze = ANALYZERS[lang] || analyzeJavaScript;
+    const analysisResult = analyze(code, lang);
+
+    // Save to MongoDB only when it is connected.
+    // A failed save must never block the analysis result.
+    let persisted = false;
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const newScan = new Scan({
+          codeSnippet: code,
+          language: lang,
+          totalIssues: analysisResult.totalIssues,
+          issuesFound: analysisResult.issuesFound
+        });
+        await newScan.save();
+        persisted = true;
+      } catch (saveError) {
+        console.error('Failed to save scan to MongoDB:', saveError.message);
+      }
+    }
+
+    res.status(200).json({ ...analysisResult, persisted });
+  } catch (error) {
+    console.error('Analysis error:', error);
+    res.status(500).json({ error: error.message || 'Server error during code analysis.' });
+  }
+});
+
+/* -------------------------------------------------------------------------
+ * History route — returns an empty list when the DB is unreachable.
+ * ---------------------------------------------------------------------- */
+app.get('/api/history', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(200).json([]);
+  }
+  try {
+    const history = await Scan.find().sort({ createdAt: -1 }).limit(20);
+    res.status(200).json(history);
+  } catch (error) {
+    console.error('History fetch error:', error);
+    res.status(200).json([]);
+  }
 });
 
 // Start Server
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

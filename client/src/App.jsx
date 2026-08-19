@@ -31,6 +31,8 @@ function App() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
+  const [backendOnline, setBackendOnline] = useState(null); // null = checking, true/false = result
+  const [analyzeError, setAnalyzeError] = useState(null);
 
   // Light / dark minimalist theme
   const [theme, setTheme] = useState(() => {
@@ -83,15 +85,42 @@ function App() {
     try {
       const res = await fetch(`${API_BASE_URL}/api/history`);
       const data = await res.json();
-      setHistory(data);
+      if (Array.isArray(data)) {
+        setHistory(data);
+      }
     } catch (err) {
       console.error('Failed to load history', err);
     }
   };
 
+  // Lightweight connectivity check — used on load and by the Retry button
+  const checkBackend = async () => {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 5000);
+      const res = await fetch(`${API_BASE_URL}/api/health`, { signal: controller.signal });
+      clearTimeout(timer);
+      setBackendOnline(res.ok);
+    } catch (err) {
+      console.error('Backend health check failed:', err);
+      setBackendOnline(false);
+    }
+  };
+
   useEffect(() => {
+    checkBackend();
     fetchHistory();
   }, []);
+
+  // While the backend is offline, keep re-checking every few seconds so the
+  // warning banner clears by itself as soon as the server comes back up.
+  useEffect(() => {
+    if (backendOnline !== false) return;
+    const id = setInterval(() => {
+      checkBackend();
+    }, 5000);
+    return () => clearInterval(id);
+  }, [backendOnline]);
 
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
@@ -126,6 +155,7 @@ function App() {
   const handleAnalyze = async () => {
     if (!code.trim()) return;
     setLoading(true);
+    setAnalyzeError(null);
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/analyze`, {
@@ -134,11 +164,21 @@ function App() {
         body: JSON.stringify({ code, language: selectedLanguage }),
       });
       const data = await response.json();
-      setReport(data);
-      fetchHistory();
+
+      if (!response.ok || data.error) {
+        console.error('Analysis request failed:', response.status, data.error);
+        setAnalyzeError(data.error || `Server error (HTTP ${response.status}).`);
+        setReport(null);
+      } else {
+        setReport(data);
+        setBackendOnline(true);
+        fetchHistory();
+      }
     } catch (err) {
       console.error('Error connecting to backend:', err);
-      alert('Failed to connect to the bug detector server. Make sure your backend and MongoDB are running.');
+      setAnalyzeError('Cannot reach the analysis server. Start the backend with `npm start` inside the backend folder, then run the scan again.');
+      setReport(null);
+      setBackendOnline(false);
     } finally {
       setLoading(false);
     }
@@ -353,6 +393,26 @@ function App() {
                     )}
                   </div>
                 </div>
+
+                {analyzeError && (
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-red-400/40 bg-red-50 text-red-700 px-4 py-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle size={16} className="shrink-0" />
+                      <span>{analyzeError}</span>
+                    </div>
+                    <button onClick={() => setAnalyzeError(null)} className="font-bold hover:underline shrink-0">Dismiss</button>
+                  </div>
+                )}
+
+                {backendOnline === false && (
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-400/40 bg-amber-50 text-amber-700 px-4 py-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle size={16} className="shrink-0" />
+                      <span>Backend server is not running. Start it with <code className="font-mono text-xs">npm start</code> in the <code className="font-mono text-xs">backend</code> folder (or run <code className="font-mono text-xs">start.bat</code>) — this banner clears automatically once it is online.</span>
+                    </div>
+                    <button onClick={checkBackend} className="font-bold hover:underline shrink-0">Retry</button>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                   <div className="skeuo-win flex flex-col w-full">
