@@ -1,6 +1,6 @@
 import { ShieldAlert, ArrowRight, CheckCircle2, Activity, Code2, Database, Terminal, Key, GitBranch, Sliders, Webhook, LogOut, Sun, Moon } from 'lucide-react';
 
-export default function Dashboard({ setCurrentView, theme, toggleTheme }) {
+export default function Dashboard({ setCurrentView, theme, toggleTheme, onLogout }) {
   const stats = [
     { label: 'Total Scans Run', value: '12', subtext: 'Engine operational', icon: CheckCircle2 },
     { label: 'Active Parsers', value: 'Acorn AST', subtext: 'Real-time syntax tracking', icon: Terminal },
@@ -35,7 +35,7 @@ export default function Dashboard({ setCurrentView, theme, toggleTheme }) {
             <button onClick={toggleTheme} className="theme-btn" title="Toggle theme" aria-label="Toggle theme">
               {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-            <button onClick={() => setCurrentView('home')} className="btn btn-ghost btn-sm">
+            <button onClick={onLogout} className="btn btn-ghost btn-sm">
               <LogOut className="w-4 h-4" />
               Log Out
             </button>

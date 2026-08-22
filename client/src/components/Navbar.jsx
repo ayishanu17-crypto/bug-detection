@@ -1,4 +1,4 @@
-import { ShieldAlert, Sun, Moon } from 'lucide-react';
+import { ShieldAlert, Sun, Moon, LogOut } from 'lucide-react';
 
 const NAV_LINKS = [
   { view: 'analyzer', label: 'Analyzer' },
@@ -9,7 +9,7 @@ const NAV_LINKS = [
   { view: 'settings', label: 'Settings' },
 ];
 
-export default function Navbar({ setCurrentView, isLoggedIn, theme, toggleTheme, currentView }) {
+export default function Navbar({ setCurrentView, isLoggedIn, theme, toggleTheme, currentView, user, onLogout }) {
   return (
     <header className="sticky top-0 z-50 glass border-b border-white/40">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
@@ -47,10 +47,25 @@ export default function Navbar({ setCurrentView, isLoggedIn, theme, toggleTheme,
           >
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
-          {!isLoggedIn && (
+          {!isLoggedIn ? (
             <>
               <button onClick={() => setCurrentView('login')} className="btn btn-glass">Log In</button>
               <button onClick={() => setCurrentView('signup')} className="btn btn-clay-accent">Get started</button>
+            </>
+          ) : (
+            <>
+              {user?.email && (
+                <span
+                  className="hidden lg:block text-sm font-semibold text-muted max-w-[160px] truncate"
+                  title={user.email}
+                >
+                  {user.email}
+                </span>
+              )}
+              <button onClick={onLogout} className="btn btn-ghost" title="Log out">
+                <LogOut size={16} />
+                <span>Log Out</span>
+              </button>
             </>
           )}
         </div>

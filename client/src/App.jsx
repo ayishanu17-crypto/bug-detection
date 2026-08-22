@@ -13,8 +13,12 @@ import {
   Sliders, Download, FileText, X, Play, Sun, Moon, Copy, Sparkles
 } from 'lucide-react';
 import { getLocalHistory, saveLocalScan, mergeHistory } from './historyStore';
+import { auth, onAuthStateChanged, signOut } from './firebase';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+// Views that require an authenticated Firebase user
+const PROTECTED_VIEWS = ['dashboard', 'analyzer', 'history', 'rules', 'cicd', 'alerts', 'settings'];
 
 function App() {
   const getInitialView = () => {
@@ -31,6 +35,8 @@ function App() {
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const [authReady, setAuthReady] = useState(false); // true once Firebase confirms the auth session
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
   const [backendOnline, setBackendOnline] = useState(null); // null = checking, true/false = result
   const [analyzeError, setAnalyzeError] = useState(null);
@@ -67,6 +73,7 @@ function App() {
   });
 
   const changeView = (view) => {
+    if (!isLoggedIn && PROTECTED_VIEWS.includes(view)) view = 'login';
     window.location.hash = view;
     setCurrentView(view);
     window.scrollTo(0, 0);
@@ -81,6 +88,25 @@ function App() {
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
+
+  // Keep the UI in sync with the Firebase auth session (persists across refreshes)
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+      setUser(fbUser);
+      setIsLoggedIn(!!fbUser);
+      setAuthReady(true);
+    });
+    return unsubscribe;
+  }, []);
+
+  // Protect logged-in pages: bounce unauthenticated visitors to the Login view
+  useEffect(() => {
+    if (!authReady) return;
+    if (!isLoggedIn && PROTECTED_VIEWS.includes(currentView)) {
+      setCurrentView('login');
+      window.location.hash = 'login';
+    }
+  }, [authReady, isLoggedIn, currentView]);
 
   const fetchHistory = async () => {
     let serverEntries = [];
@@ -133,9 +159,24 @@ function App() {
     return () => clearInterval(id);
   }, [backendOnline]);
 
-  const handleLoginSuccess = () => {
+  const handleLoginSuccess = (fbUser) => {
+    setUser(fbUser || null);
     setIsLoggedIn(true);
     setCurrentView('dashboard');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
+    setUser(null);
+    setIsLoggedIn(false);
+    setReport(null);
+    setCode('');
+    setHistory([]);
+    setCurrentView('home');
   };
 
   // Detect programming language from code content
@@ -242,10 +283,6 @@ function App() {
   const health = getHealthScore();
 
   const isSplitLayout = currentView === 'login' || currentView === 'signup';
-  
-  // Check if user is on a logged-in page
-  const loggedInPages = ['dashboard', 'analyzer', 'history', 'rules', 'cicd', 'alerts', 'settings'];
-  const isOnLoggedInPage = loggedInPages.includes(currentView);
 
   return (
     <div className="relative min-h-screen text-ink selection:bg-accent selection:text-onaccent flex flex-col w-full">
@@ -261,7 +298,9 @@ function App() {
         <Navbar 
           currentView={currentView} 
           setCurrentView={changeView} 
-          isLoggedIn={isLoggedIn || isOnLoggedInPage} 
+          isLoggedIn={isLoggedIn} 
+          user={user}
+          onLogout={handleLogout}
           theme={theme}
           toggleTheme={toggleTheme}
         />
@@ -377,7 +416,7 @@ function App() {
                       <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">Ready to run your first scan?</h2>
                       <p className="text-white/80 mt-1 text-sm">Paste a snippet and get an executive security report in seconds.</p>
                     </div>
-                    <button onClick={() => changeView('login')} className="btn btn-brutal shrink-0">
+                    <button onClick={() => changeView(isLoggedIn ? 'analyzer' : 'login')} className="btn btn-brutal shrink-0">
                       Open the Analyzer
                     </button>
                   </section>
@@ -713,7 +752,7 @@ function App() {
             {/* Dashboard View */}
             {currentView === 'dashboard' && (
               <div className="w-full max-w-6xl mx-auto px-6 py-8">
-                <Dashboard setCurrentView={changeView} theme={theme} toggleTheme={toggleTheme} />
+                <Dashboard setCurrentView={changeView} theme={theme} toggleTheme={toggleTheme} onLogout={handleLogout} />
               </div>
             )}
 
