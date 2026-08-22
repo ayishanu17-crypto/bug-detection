@@ -12,6 +12,7 @@ import {
   Lightbulb, ArrowRight, AlertTriangle, CheckCircle, CheckCircle2,
   Sliders, Download, FileText, X, Play, Sun, Moon, Copy, Sparkles
 } from 'lucide-react';
+import { getLocalHistory, saveLocalScan, mergeHistory } from './historyStore';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -82,15 +83,19 @@ function App() {
   }, []);
 
   const fetchHistory = async () => {
+    let serverEntries = [];
     try {
       const res = await fetch(`${API_BASE_URL}/api/history`);
       const data = await res.json();
-      if (Array.isArray(data)) {
-        setHistory(data);
-      }
+      if (Array.isArray(data)) serverEntries = data;
     } catch (err) {
       console.error('Failed to load history', err);
     }
+
+    // Merge the database entries with everything cached in the browser so the
+    // scanned code stays visible even when the backend/MongoDB is unreachable.
+    const localEntries = getLocalHistory();
+    setHistory(mergeHistory(serverEntries, localEntries));
   };
 
   // Lightweight connectivity check — used on load and by the Retry button
@@ -111,6 +116,12 @@ function App() {
     checkBackend();
     fetchHistory();
   }, []);
+
+  // Refresh the scan history every time the user opens that view, so newly
+  // scanned code is always present when they navigate back to it.
+  useEffect(() => {
+    if (currentView === 'history') fetchHistory();
+  }, [currentView]);
 
   // While the backend is offline, keep re-checking every few seconds so the
   // warning banner clears by itself as soon as the server comes back up.
@@ -179,6 +190,18 @@ function App() {
       } else {
         setReport(data);
         setBackendOnline(true);
+
+        // Cache the scan in the browser so it stays in history even without a
+        // reachable database or backend.
+        saveLocalScan({
+          _id: `local-${Date.now()}`,
+          codeSnippet: code,
+          language: selectedLanguage,
+          totalIssues: data.totalIssues || 0,
+          issuesFound: data.issuesFound || [],
+          createdAt: new Date().toISOString()
+        });
+
         fetchHistory();
       }
     } catch (err) {
@@ -284,7 +307,7 @@ function App() {
                         Analyze architecture, catch vulnerabilities with Abstract Syntax Trees, and apply instant fixes — for JS, Python, C/C++ and Java.
                       </p>
                       <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                        <button onClick={() => changeView('analyzer')} className="btn btn-clay-accent">
+                        <button onClick={() => changeView('signup')} className="btn btn-clay-accent">
                           <span>Start Analyzing Code</span>
                           <ArrowRight size={16} />
                         </button>
@@ -354,7 +377,7 @@ function App() {
                       <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">Ready to run your first scan?</h2>
                       <p className="text-white/80 mt-1 text-sm">Paste a snippet and get an executive security report in seconds.</p>
                     </div>
-                    <button onClick={() => changeView('analyzer')} className="btn btn-brutal shrink-0">
+                    <button onClick={() => changeView('login')} className="btn btn-brutal shrink-0">
                       Open the Analyzer
                     </button>
                   </section>
@@ -664,12 +687,17 @@ function App() {
                   ) : (
                     <div className="space-y-3">
                       {history.map((scan) => (
-                        <div key={scan._id} className="card p-4 rounded-xl flex items-center justify-between w-full">
-                          <div>
-                            <p className="text-xs text-slate-400 mb-1">Scanned at: {new Date(scan.createdAt).toLocaleString()}</p>
-                            <p className="text-sm font-mono text-slate-700 truncate max-w-2xl">{scan.codeSnippet}</p>
+                        <div key={scan._id} className="card p-4 rounded-xl flex items-center justify-between w-full gap-4">
+                          <div className="min-w-0">
+                            <p className="text-xs text-slate-400 mb-1">
+                              Scanned at: {new Date(scan.createdAt).toLocaleString()}
+                              <span className="ml-2 px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wide">
+                                {scan.language || 'javascript'}
+                              </span>
+                            </p>
+                            <p className="text-sm font-mono text-slate-700 truncate max-w-2xl" title={scan.codeSnippet}>{scan.codeSnippet}</p>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right shrink-0">
                             <span className={`px-3 py-1 text-xs font-bold rounded-full ${scan.totalIssues > 0 ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
                               {scan.totalIssues} Issues Found
                             </span>
