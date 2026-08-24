@@ -31,18 +31,30 @@ if (process.env.CLIENT_URL) {
   allowedOrigins.push(process.env.CLIENT_URL);
 }
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (Postman, server-to-server, etc.)
-    if (!origin) {
-      return callback(null, true);
-    }
+app.use(cors((req, callback) => {
+  const origin = req.header('Origin');
+  let isAllowed = false;
 
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
+  if (!origin) {
+    isAllowed = true;
+  } else if (allowedOrigins.includes(origin)) {
+    isAllowed = true;
+  } else {
+    try {
+      const originHost = new URL(origin).host;
+      const requestHost = req.header('Host');
+      if (originHost === requestHost) {
+        isAllowed = true;
+      }
+    } catch (e) {
+      // Ignore URL parsing errors
     }
+  }
 
-    return callback(new Error('Not allowed by CORS'));
+  if (isAllowed) {
+    callback(null, { origin: true });
+  } else {
+    callback(new Error('Not allowed by CORS'));
   }
 }));
 
@@ -299,10 +311,14 @@ if (fs.existsSync(clientDist)) {
   app.use(express.static(clientDist));
 
   // React SPA fallback
-  app.get(/^\/(?!api\/).*/, (req, res) => {
-    res.sendFile(
-      path.join(clientDist, 'index.html')
-    );
+  app.get(/^\/(?!api\/).*/, (req, res, next) => {
+    if (req.accepts('html')) {
+      res.sendFile(
+        path.join(clientDist, 'index.html')
+      );
+    } else {
+      next();
+    }
   });
 
   console.log('✅ Serving built frontend from client/dist');

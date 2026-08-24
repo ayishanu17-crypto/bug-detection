@@ -15,7 +15,10 @@ import {
 import { getLocalHistory, saveLocalScan, mergeHistory } from './historyStore';
 import { auth, onAuthStateChanged, signOut } from './firebase';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000'
+    : '');
 
 // Views that require an authenticated Firebase user
 const PROTECTED_VIEWS = ['dashboard', 'analyzer', 'history', 'rules', 'cicd', 'alerts', 'settings'];
