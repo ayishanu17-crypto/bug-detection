@@ -72,7 +72,8 @@ function App() {
     noEval: true,
     noConsole: true,
     strictComparisons: true,
-    noUnusedVars: true
+    noUnusedVars: true,
+    undefinedVars: true
   });
 
   const changeView = (view) => {
@@ -223,7 +224,7 @@ function App() {
       const response = await fetch(`${API_BASE_URL}/api/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, language: selectedLanguage }),
+        body: JSON.stringify({ code, language: selectedLanguage, rules: activeRules }),
       });
       const data = await response.json();
 

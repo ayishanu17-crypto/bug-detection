@@ -180,12 +180,12 @@ app.get('/api/health', (req, res) => {
 // -------------------------------------------------------------------------
 
 const ANALYZERS = {
-  javascript: analyzeJavaScript,
-  python: analyzePython,
-  cpp: analyzeCCpp,
-  c: analyzeCCpp,
-  ccpp: analyzeCCpp,
-  java: analyzeJava
+  javascript: (code, lang, rules) => analyzeJavaScript(code, rules),
+  python: (code, lang, rules) => analyzePython(code, rules),
+  cpp: (code, lang, rules) => analyzeCCpp(code, lang, rules),
+  c: (code, lang, rules) => analyzeCCpp(code, lang, rules),
+  ccpp: (code, lang, rules) => analyzeCCpp(code, lang, rules),
+  java: (code, lang, rules) => analyzeJava(code, rules)
 };
 
 // -------------------------------------------------------------------------
@@ -194,7 +194,7 @@ const ANALYZERS = {
 
 app.post('/api/analyze', async (req, res) => {
   try {
-    const { code, language } = req.body;
+    const { code, language, rules } = req.body;
 
     if (!code || !String(code).trim()) {
       return res.status(400).json({
@@ -204,9 +204,13 @@ app.post('/api/analyze', async (req, res) => {
 
     const lang = String(language || 'javascript').toLowerCase();
 
-    const analyze = ANALYZERS[lang] || analyzeJavaScript;
+    const analyze = ANALYZERS[lang] || ANALYZERS.javascript;
 
-    const analysisResult = analyze(code, lang);
+    const rulesConfig = (rules && typeof rules === 'object' && !Array.isArray(rules))
+      ? rules
+      : {};
+
+    const analysisResult = analyze(code, lang, rulesConfig);
 
     // Save to MongoDB when connected, otherwise fall back to the local file
     let persisted = false;

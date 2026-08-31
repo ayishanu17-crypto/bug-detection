@@ -4,19 +4,19 @@ const { analyzePython } = require('./analyzers/pyAnalyzer');
 const { analyzeCCpp } = require('./analyzers/ccppAnalyzer');
 const { analyzeJava } = require('./analyzers/javaAnalyzer');
 
-function analyzeSourceCode(codeString, language = 'javascript') {
+function analyzeSourceCode(codeString, language = 'javascript', options = {}) {
     switch (language.toLowerCase()) {
         case 'python':
-            return analyzePython(codeString);
+            return analyzePython(codeString, options);
         case 'c':
         case 'cpp':
         case 'ccpp':
-            return analyzeCCpp(codeString, language);
+            return analyzeCCpp(codeString, language, options);
         case 'java':
-            return analyzeJava(codeString);
+            return analyzeJava(codeString, options);
         case 'javascript':
         default:
-            return analyzeJavaScript(codeString);
+            return analyzeJavaScript(codeString, options);
     }
 }
 
