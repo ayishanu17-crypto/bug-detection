@@ -1,0 +1,250 @@
+[
+  {
+    "_id": "local-1788237690041",
+    "codeSnippet": "a=18\nif age>=18:\nprint(\"selected\")\nelif:\nprint(\"nort slected\")",
+    "language": "python",
+    "totalIssues": 3,
+    "issuesFound": [
+      {
+        "line": 3,
+        "col": 1,
+        "ruleName": "Syntax Error",
+        "severity": "HIGH",
+        "message": "Syntax error: expected an indented block after 'if' statement on line 2 — \"print(\"selected\")\"",
+        "snippet": "print(\"selected\")",
+        "suggestedFix": "Fix the syntax on line 3 and run the scan again."
+      },
+      {
+        "line": 1,
+        "col": 0,
+        "ruleName": "Interpreter Not Found",
+        "severity": "LOW",
+        "message": "Python is not available on this machine, so only basic static checks ran. Install Python 3 for full syntax error detection.",
+        "snippet": "",
+        "suggestedFix": "Install Python 3, add it to your PATH, then restart the backend."
+      },
+      {
+        "line": 1,
+        "ruleName": "Missing whitespace around operator",
+        "severity": "LOW",
+        "message": "PEP 8 (E225): expected spaces around the \"=\" operator.",
+        "snippet": "a=18",
+        "suggestedFix": "Replace with: a = 18"
+      }
+    ],
+    "createdAt": "2026-09-01T04:41:30.041Z"
+  },
+  {
+    "_id": "local-1788234869032",
+    "codeSnippet": "const a = 5:\nconst b = 6:\nconsole.log(a)\n",
+    "language": "javascript",
+    "totalIssues": 5,
+    "issuesFound": [
+      {
+        "line": 1,
+        "col": 11,
+        "ruleName": "Syntax Error (auto-fixed)",
+        "severity": "HIGH",
+        "message": "Unexpected token (1:11) — a corrected program was generated automatically.",
+        "snippet": "const a = 5:",
+        "suggestedFix": "\nconst b = 6\nconsole.log(a)\n"
+      },
+      {
+        "line": 2,
+        "col": 11,
+        "ruleName": "Syntax Error (auto-fixed)",
+        "severity": "HIGH",
+        "message": "Unexpected token (2:11) — a corrected program was generated automatically.",
+        "snippet": "const b = 6:",
+        "suggestedFix": "\nconst b = 6\nconsole.log(a)\n"
+      },
+      {
+        "line": 3,
+        "col": 0,
+        "ruleName": "Use of console.log()",
+        "severity": "LOW",
+        "message": "console.log() found in the code — console statements are usually left in by mistake.",
+        "snippet": "console.log(...)",
+        "suggestedFix": "Remove the console.log() call, or guard it behind a debug/environment flag."
+      },
+      {
+        "line": 3,
+        "col": 12,
+        "ruleName": "Undefined Variable",
+        "severity": "HIGH",
+        "message": "\"a\" is used but never declared in this code.",
+        "snippet": "a",
+        "suggestedFix": "Declare a first (const/let/var), pass it in as a parameter, or check for a typo in the name."
+      },
+      {
+        "line": 2,
+        "ruleName": "Unused Variable",
+        "severity": "LOW",
+        "message": "\"b\" is declared but never used.",
+        "snippet": "b",
+        "suggestedFix": "Remove the declaration or actually use the variable."
+      }
+    ],
+    "createdAt": "2026-09-01T03:54:29.032Z"
+  },
+  {
+    "_id": "local-1788234868958",
+    "codeSnippet": "a=10:\nb=5\ns=a+b\nprint(s):\n",
+    "language": "python",
+    "totalIssues": 5,
+    "issuesFound": [
+      {
+        "line": 1,
+        "col": 5,
+        "ruleName": "Syntax Error",
+        "severity": "HIGH",
+        "message": "Syntax error: invalid syntax — \"a=10:\"",
+        "snippet": "a=10:",
+        "suggestedFix": "Replace this line with: a = 10"
+      },
+      {
+        "line": 4,
+        "col": 9,
+        "ruleName": "Syntax Error",
+        "severity": "HIGH",
+        "message": "Syntax error: invalid syntax — \"print(s):\"",
+        "snippet": "print(s):",
+        "suggestedFix": "Replace this line with: print(s)"
+      },
+      {
+        "line": 1,
+        "ruleName": "Missing whitespace around operator",
+        "severity": "LOW",
+        "message": "PEP 8 (E225): expected spaces around the \"=\" operator.",
+        "snippet": "a=10:",
+        "suggestedFix": "Replace with: a = 10"
+      },
+      {
+        "line": 2,
+        "ruleName": "Missing whitespace around operator",
+        "severity": "LOW",
+        "message": "PEP 8 (E225): expected spaces around the \"=\" operator.",
+        "snippet": "b=5",
+        "suggestedFix": "Replace with: b = 5"
+      },
+      {
+        "line": 3,
+        "ruleName": "Missing whitespace around operator",
+        "severity": "LOW",
+        "message": "PEP 8 (E225): expected spaces around the \"=\" operator.",
+        "snippet": "s=a+b",
+        "suggestedFix": "Replace with: s = a+b"
+      }
+    ],
+    "createdAt": "2026-09-01T03:54:28.958Z"
+  },
+  {
+    "_id": "local-1788234868202",
+    "codeSnippet": "age=18\nif age>=18:\nprint(\"you are selected)\nelif \nprintf(\"you arent\")\n",
+    "language": "python",
+    "totalIssues": 3,
+    "issuesFound": [
+      {
+        "line": 3,
+        "col": 7,
+        "ruleName": "Syntax Error",
+        "severity": "HIGH",
+        "message": "Syntax error: unterminated string literal (detected at line 3) — \"print(\"you are selected)\"",
+        "snippet": "print(\"you are selected)",
+        "suggestedFix": "Replace this line with: print(\"you are selected\")"
+      },
+      {
+        "line": 1,
+        "ruleName": "Missing whitespace around operator",
+        "severity": "LOW",
+        "message": "PEP 8 (E225): expected spaces around the \"=\" operator.",
+        "snippet": "age=18",
+        "suggestedFix": "Replace with: age = 18"
+      },
+      {
+        "line": 4,
+        "ruleName": "Trailing whitespace",
+        "severity": "LOW",
+        "message": "Unnecessary trailing whitespace at the end of the line.",
+        "snippet": "elif",
+        "suggestedFix": "elif"
+      }
+    ],
+    "createdAt": "2026-09-01T03:54:28.202Z"
+  },
+  {
+    "_id": "local-1788158189222",
+    "codeSnippet": "a=10:\nb=5\ns=a+b\nprint(S):",
+    "language": "python",
+    "totalIssues": 3,
+    "issuesFound": [
+      {
+        "line": 1,
+        "ruleName": "Missing whitespace around operator",
+        "severity": "LOW",
+        "message": "PEP 8 (E225): expected spaces around the \"=\" operator.",
+        "snippet": "a=10:",
+        "suggestedFix": "Replace with: a = 10"
+      },
+      {
+        "line": 2,
+        "ruleName": "Missing whitespace around operator",
+        "severity": "LOW",
+        "message": "PEP 8 (E225): expected spaces around the \"=\" operator.",
+        "snippet": "b=5",
+        "suggestedFix": "Replace with: b = 5"
+      },
+      {
+        "line": 3,
+        "ruleName": "Missing whitespace around operator",
+        "severity": "LOW",
+        "message": "PEP 8 (E225): expected spaces around the \"=\" operator.",
+        "snippet": "s=a+b",
+        "suggestedFix": "Replace with: s = a+b"
+      }
+    ],
+    "createdAt": "2026-08-31T06:36:29.223Z"
+  },
+  {
+    "_id": "local-1788157933376",
+    "codeSnippet": "a=10:\nb=5\ns=a+b\nprint(S)",
+    "language": "python",
+    "totalIssues": 4,
+    "issuesFound": [
+      {
+        "line": 1,
+        "col": 5,
+        "ruleName": "Syntax Error",
+        "severity": "HIGH",
+        "message": "Syntax error: invalid syntax — \"a=10:\"",
+        "snippet": "a=10:",
+        "suggestedFix": "Replace this line with: a = 10"
+      },
+      {
+        "line": 1,
+        "ruleName": "Missing whitespace around operator",
+        "severity": "LOW",
+        "message": "PEP 8 (E225): expected spaces around the \"=\" operator.",
+        "snippet": "a=10:",
+        "suggestedFix": "Replace with: a = 10"
+      },
+      {
+        "line": 2,
+        "ruleName": "Missing whitespace around operator",
+        "severity": "LOW",
+        "message": "PEP 8 (E225): expected spaces around the \"=\" operator.",
+        "snippet": "b=5",
+        "suggestedFix": "Replace with: b = 5"
+      },
+      {
+        "line": 3,
+        "ruleName": "Missing whitespace around operator",
+        "severity": "LOW",
+        "message": "PEP 8 (E225): expected spaces around the \"=\" operator.",
+        "snippet": "s=a+b",
+        "suggestedFix": "Replace with: s = a+b"
+      }
+    ],
+    "createdAt": "2026-08-31T06:32:13.381Z"
+  }
+]

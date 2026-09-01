@@ -56,6 +56,70 @@ function repairJavaScript(codeString, parseError) {
     return null;
 }
 
+// Report EVERY syntax error, not just the first one. Acorn itself only raises
+// the first error it hits, so we "mask" (blank out) each failing line and
+// re-parse to uncover the errors that follow it. Blank lines are always valid
+// at statement level in JS ({ } blocks may legally be empty), so this is safe.
+function collectSyntaxErrors(codeString) {
+    const errors = [];
+    let working = codeString;
+    const seen = new Set();         // (line|col|message) dedupe
+    const maskedLines = new Set();  // lines already blanked
+    for (let pass = 0; pass < 100; pass++) {
+        const { error } = tryParseJavaScript(working);
+        if (!error) break;
+        const line = (error.loc && error.loc.line) || 1;
+        const col = (error.loc && typeof error.loc.column === 'number') ? error.loc.column : 0;
+        const key = line + '|' + col + '|' + error.message;
+        if (seen.has(key) || maskedLines.has(line)) break; // no progress / cascade
+        seen.add(key);
+        errors.push({ line, col, message: error.message });
+        const ls = working.split(/\r?\n/);
+        const idx = line - 1;
+        if (idx < 0 || idx >= ls.length) break;
+        const last = errors[errors.length - 1];
+        if (last && col === 0 && last.message === error.message) break; // cascade
+        maskedLines.add(line);
+        ls[idx] = '';
+        const next = ls.join('\n');
+        if (next === working) break;
+        working = next;
+    }
+    return errors;
+}
+
+// Repair multiple syntax errors at once. The single-pass repairJavaScript()
+// only ever fixes one error, so when several lines are broken it gives up and
+// produces nothing. This wraps it in a loop: after each single-error repair (or,
+// as a fallback, blanking the offending line) it re-parses and keeps going until
+// the whole program is valid.
+function repairAllJavaScript(codeString) {
+    let current = codeString;
+    const maskedLines = new Set();
+    let lastKey = null;
+    for (let i = 0; i < 100; i++) {
+        const { error } = tryParseJavaScript(current);
+        if (!error) return { code: current, fixed: true };
+        const line = (error.loc && error.loc.line) || 1;
+        const col = (error.loc && typeof error.loc.column === 'number') ? error.loc.column : 0;
+        const key = line + '|' + col + '|' + error.message;
+        if (key === lastKey) return { code: current, fixed: false }; // stuck
+        lastKey = key;
+        const repaired = repairJavaScript(current, error);
+        if (repaired) { current = repaired; continue; }
+        const ls = current.split(/\r?\n/);
+        const idx = line - 1;
+        if (idx < 0 || idx >= ls.length) break;
+        if (maskedLines.has(line)) break;
+        maskedLines.add(line);
+        ls[idx] = '';
+        current = ls.join('\n');
+    }
+    const final = tryParseJavaScript(current);
+    return { code: current, fixed: !final.error };
+}
+
+
 // ---------------------------------------------------------------------------
 // Rule configuration — mirrors the frontend "Configure Rules" panel
 // ---------------------------------------------------------------------------
@@ -299,32 +363,41 @@ function analyzeJavaScript(codeString, options) {
     let { ast, error } = tryParseJavaScript(codeString);
 
     if (error) {
-        const repaired = repairJavaScript(codeString, error);
-        if (repaired) {
-            workingCode = repaired;
+        // Acorn only reports the FIRST syntax error. Walk the code, masking each
+        // failing line, to collect every independent syntax error — then repair
+        // them all instead of giving up after the first one.
+        const syntaxErrors = collectSyntaxErrors(codeString);
+        const repair = repairAllJavaScript(codeString);
+        const sourceLines = codeString.split(/\r?\n/);
+        if (repair.fixed) {
+            workingCode = repair.code;
             changed = true;
-            const sourceLines = codeString.split(/\r?\n/);
-            const lineText = (sourceLines[((error.loc && error.loc.line) || 1) - 1] || '').trim();
-            issues.push({
-                line: (error.loc && error.loc.line) || 1,
-                col: (error.loc && typeof error.loc.column === 'number') ? error.loc.column : 0,
-                ruleName: 'Syntax Error (auto-fixed)',
-                severity: 'HIGH',
-                message: `${error.message} — a corrected program was generated automatically.`,
-                snippet: lineText || 'Around the reported line.',
-                suggestedFix: workingCode
-            });
+            for (const err of syntaxErrors) {
+                const lineText = (sourceLines[(err.line || 1) - 1] || '').trim();
+                issues.push({
+                    line: err.line || 1,
+                    col: err.col || 0,
+                    ruleName: 'Syntax Error (auto-fixed)',
+                    severity: 'HIGH',
+                    message: `${err.message} — a corrected program was generated automatically.`,
+                    snippet: lineText || 'Around the reported line.',
+                    suggestedFix: workingCode
+                });
+            }
             ({ ast } = tryParseJavaScript(workingCode));
         } else {
-            issues.push({
-                line: (error.loc && error.loc.line) || 1,
-                col: (error.loc && typeof error.loc.column === 'number') ? error.loc.column : 0,
-                ruleName: 'Syntax Error',
-                severity: 'HIGH',
-                message: error.message,
-                snippet: 'Check the code near this line.',
-                suggestedFix: 'Fix the reported syntax error, then scan again to receive a corrected program.'
-            });
+            for (const err of syntaxErrors) {
+                const lineText = (sourceLines[(err.line || 1) - 1] || '').trim();
+                issues.push({
+                    line: err.line || 1,
+                    col: err.col || 0,
+                    ruleName: 'Syntax Error',
+                    severity: 'HIGH',
+                    message: err.message,
+                    snippet: lineText || 'Around the reported line.',
+                    suggestedFix: 'Fix the reported syntax errors, then scan again to receive a corrected program.'
+                });
+            }
             return {
                 totalIssues: issues.length,
                 issuesFound: issues,

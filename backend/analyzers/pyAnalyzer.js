@@ -48,21 +48,57 @@ function runPythonScript(script, codeString) {
 }
 
 // Real Python syntax check with the `ast` module (catches things like `a=10:`).
+// Python's ast.parse only raises the FIRST SyntaxError, so we re-parse after
+// deleting the offending character each time to uncover the errors that follow.
 const SYNTAX_SCRIPT = `
 import sys, json, ast
+
+def abs_index(code, lineno, offset):
+    # lineno is 1-based, offset is the 1-based display column -> absolute index
+    if lineno <= 1:
+        return max(0, (offset or 1) - 1)
+    idx = 0
+    for _ in range(lineno - 1):
+        nl = code.find("\\n", idx)
+        if nl == -1:
+            return len(code)
+        idx = nl + 1
+    return min(len(code), idx + max(0, (offset or 1) - 1))
+
 code = sys.stdin.read()
+masked = code
+errors = []
+reported_lines = set()
+seen = set()
+MAX = 200
 try:
-    ast.parse(code)
-    print(json.dumps([]))
-except SyntaxError as e:
-    print(json.dumps([{
-        "line": e.lineno or 1,
-        "col": e.offset or 0,
-        "message": (e.msg or "").replace(chr(10), " "),
-        "text": (e.text or "").rstrip()
-    }]))
+    for _ in range(MAX):
+        try:
+            ast.parse(masked)
+            break
+        except SyntaxError as e:
+            line = e.lineno or 1
+            msg = (e.msg or "").replace(chr(10), " ")
+            if line in reported_lines:
+                break  # cascading errors on an already-reported line -> stop
+            key = (line, msg)
+            if key in seen:
+                break  # no progress -> stop here
+            seen.add(key)
+            reported_lines.add(line)
+            errors.append({
+                "line": line,
+                "col": e.offset or 0,
+                "message": msg,
+                "text": (e.text or "").rstrip()
+            })
+            pos = abs_index(masked, line, e.offset)
+            if pos < 0 or pos >= len(masked) or masked[pos] == "\\n":
+                break
+            masked = masked[:pos] + masked[pos + 1:]
 except Exception:
-    print(json.dumps([]))
+    pass  # never crash the analyzer; report whatever errors were already found
+print(json.dumps(errors))
 `;
 
 function getSyntaxErrors(codeString) {
@@ -77,6 +113,10 @@ function getSyntaxErrors(codeString) {
 /* ------------------------- Fix engine ------------------------- */
 
 const BLOCK_HEADER = /^\s*(async\s+)?(def|class|if|elif|else|for|while|try|except|finally|with|match|case)\b.*:\s*$/;
+const COMPOUND_KEYWORD = /^\s*(async\s+)?(def|class|if|elif|else|for|while|try|except|finally|with|match|case)\b/;
+const ELSE_FAMILY = /^(elif|else|except|finally|case)\b/;
+
+const INDENT = '    ';
 
 // Remove a stray trailing ":" on a non-block line (e.g. `a=10:` -> `a=10`).
 function fixTrailingColon(line) {
@@ -101,6 +141,54 @@ function fixPrintStatement(line) {
     return `${indent}print(${m[1].trimEnd()})`;
 }
 
+// Common typo: `printf(...)` -> `print(...)` (only when it looks like a call).
+function fixPrintf(line) {
+    if (!/\bprintf\s*\(/.test(line)) return line;
+    const indent = line.slice(0, line.length - line.trimStart().length);
+    return indent + line.trim().replace(/\bprintf\s*\(/, 'print(');
+}
+
+// Returns the quote char if [line] contains a single-line string that is never
+// closed (e.g. `print("you are selected)`), else null. Triple-quoted strings
+// are deliberately not auto-closed.
+function unterminatedQuoteChar(line) {
+    const code = line.replace(/\s*#.*$/, '');
+    let quote = null;
+    let escaped = false;
+    for (let i = 0; i < code.length; i++) {
+        const ch = code[i];
+        if (quote) {
+            if (escaped) { escaped = false; continue; }
+            if (ch === '\\') { escaped = true; continue; }
+            if (ch === quote) {
+                if (code[i + 1] === quote && code[i + 2] === quote) { quote = null; i += 2; }
+                else quote = null;
+            }
+        } else if (ch === '"' || ch === "'") {
+            if (code[i + 1] === ch && code[i + 2] === ch) return null; // triple-quote
+            quote = ch;
+        }
+    }
+    return (quote && quote.length === 1) ? quote : null;
+}
+
+// Close a missing string quote, inserting before any trailing ")" "]" "}" so a
+// call like `print("you are selected)` repairs to `print("you are selected")`
+// instead of `print("you are selected)")`.
+function fixUnterminatedString(line) {
+    const q = unterminatedQuoteChar(line);
+    if (!q) return line;
+    const code = line.replace(/\s*#.*$/, '');
+    const openIdx = code.indexOf(q);
+    if (openIdx < 0) return line;
+    let insertAt = code.length;
+    const rest = code.slice(openIdx + 1);
+    const m = rest.match(/^[^)\]}]*[)\]}]/);
+    if (m) insertAt = openIdx + 1 + m[0].length - 1;
+    const fixed = code.slice(0, insertAt) + q + code.slice(insertAt);
+    return fixed + line.slice(code.length);
+}
+
 // PEP8 E225: add spaces around a single "=" (skips ==, !=, <=, +=, etc.)
 function addSpacesAroundAssignment(line) {
     let out = line;
@@ -116,23 +204,91 @@ function fixLine(line) {
     let out = line.replace(/\s+$/, ''); // PEP8 W291
     out = fixTrailingColon(out);
     out = fixPrintStatement(out);
+    out = fixPrintf(out);
+    out = fixUnterminatedString(out);
     out = addSpacesAroundAssignment(out);
     return out;
 }
 
-function buildCorrectedPython(codeString, interpreterAvailable) {
+// Turn a bare `elif`/`except`/`finally` (no condition) into `else:` — we can't
+// guess the missing condition, so the only sane repair is an `else` branch.
+// Also makes sure compound-keyword lines carry a trailing ":".
+function normalizeBlockHeader(trimmed) {
+    let t = trimmed;
+    if (/^elif\s*:?\s*$/.test(t)) t = t.replace(/^elif/, 'else');
+    if (/^(elif|else|except|finally)\s*$/.test(t)) t = t + ':';
+    if (COMPOUND_KEYWORD.test(t) && !/:\s*$/.test(t)) t = t + ':';
+    return t;
+}
+
+// Re-indent a block-structured program (fixes missing indentation under
+// if/for/while/def/etc. and missing colons). Best-effort — the caller only
+// accepts its output when it still parses cleanly.
+function fixIndentation(lines) {
+    const stack = [];      // one entry per open compound block
+    let prevOrigIndent = 0;
+    const out = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        const raw = lines[i];
+        const trimmed = raw.trim();
+        if (!trimmed) { out.push(''); continue; }
+        if (trimmed.startsWith('#')) { out.push(raw.replace(/\s+$/, '')); continue; }
+
+        const origIndent = raw.length - raw.trimStart().length;
+        const continuation = (i > 0) ? /\\\s*$/.test(lines[i - 1]) : false;
+        if (continuation) { out.push(raw.replace(/\s+$/, '')); continue; }
+
+        // Inline compound: `if x: stmt` on one line — keep it as-is.
+        if (COMPOUND_KEYWORD.test(trimmed) && /:\s*\S/.test(trimmed) && !/:\s*$/.test(trimmed)) {
+            out.push(INDENT.repeat(stack.length) + trimmed);
+            prevOrigIndent = origIndent;
+            continue;
+        }
+
+        if (ELSE_FAMILY.test(trimmed)) {
+            if (stack.length > 0) stack.pop();      // close the previous body
+            out.push(INDENT.repeat(stack.length) + normalizeBlockHeader(trimmed));
+            stack.push({});                          // this sibling opens a new body
+            prevOrigIndent = origIndent;
+            continue;
+        }
+
+        if (COMPOUND_KEYWORD.test(trimmed)) {
+            if (origIndent < prevOrigIndent && stack.length > 0) stack.pop();
+            out.push(INDENT.repeat(stack.length) + normalizeBlockHeader(trimmed));
+            stack.push({});
+            prevOrigIndent = origIndent;
+            continue;
+        }
+
+        // Plain statement — dedent when its original indent is shallower than the
+        // previous content line (it ends the current block).
+        if (origIndent < prevOrigIndent && stack.length > 0) stack.pop();
+        out.push(INDENT.repeat(stack.length) + trimmed);
+        prevOrigIndent = origIndent;
+    }
+    return out;
+}
+
+function buildCorrectedPython(codeString, interpreterAvailable, hadSyntaxErrors) {
     if (!codeString.trim()) return null;
     const lines = codeString.split(/\r?\n/);
+
+    // Stage 1: safe per-line fixes (typos, spacing, unbalanced quotes).
     const candidate = lines.map(fixLine).join('\n');
-    if (candidate === codeString) return null;
-    if (interpreterAvailable) {
-        if (getSyntaxErrors(candidate).length === 0) return candidate;
-        // Conservative fallback: only strip trailing whitespace / stray colons.
-        const minimal = lines.map(l => l.replace(/\s+$/, '').replace(/:\s*$/, '')).join('\n');
-        if (minimal !== codeString && getSyntaxErrors(minimal).length === 0) return minimal;
-        return null;
+    if (candidate !== codeString && (!interpreterAvailable || getSyntaxErrors(candidate).length === 0)) {
+        return candidate;
     }
-    return candidate; // no interpreter -> best-effort repair
+
+    // Stage 2: structural repair (indentation + missing colons). Only runs when
+    // the original had real syntax errors, and only accepts output that still
+    // parses — so invalid code is never presented as "fixed".
+    if (interpreterAvailable && hadSyntaxErrors) {
+        const reindented = fixIndentation(candidate.split(/\r?\n/)).join('\n');
+        if (reindented !== codeString && getSyntaxErrors(reindented).length === 0) return reindented;
+    }
+    return null;
 }
 function analyzePython(codeString) {
     const issues = [];
@@ -141,7 +297,8 @@ function analyzePython(codeString) {
     const fixedLines = lines.map(fixLine);
 
     // 1) Real Python syntax errors (catches `a=10:`, mismatched brackets, etc.)
-    for (const err of getSyntaxErrors(codeString)) {
+    const syntaxErrors = getSyntaxErrors(codeString);
+    for (const err of syntaxErrors) {
         const lineIndex = Math.max(0, (err.line || 1) - 1);
         const lineText = (lines[lineIndex] || '').trim();
         const fixed = (fixedLines[lineIndex] || '').trim();
@@ -239,7 +396,7 @@ function analyzePython(codeString) {
     return {
         totalIssues: issues.length,
         issuesFound: issues,
-        correctedCode: buildCorrectedPython(codeString, pythonAvailable),
+        correctedCode: buildCorrectedPython(codeString, pythonAvailable, syntaxErrors.length > 0),
         engine: pythonAvailable ? 'Python AST' : 'Heuristic lint'
     };
 }
