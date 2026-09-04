@@ -15,14 +15,18 @@ import {
 // These values are also overridable per-environment via Vite env vars
 // (VITE_FIREBASE_*) so staging/production builds can use their own project.
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyA70YdiZ4AD399CjnhdUfXjeBe2wlzGcvI",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "debugique.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "debugique",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "debugique.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "467588002534",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:467588002534:web:810ba85e082ad7db404127",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-8BHC3Y695K"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
+
+if (!firebaseConfig.apiKey && import.meta.env.DEV) {
+  console.warn("⚠️ Firebase configuration missing! Please create a client/.env file with VITE_FIREBASE_* keys.");
+}
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
