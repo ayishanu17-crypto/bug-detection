@@ -1,54 +1,195 @@
-import { ArrowRight, Code2, Database, Cpu } from 'lucide-react';
-
-const FEATURES = [
-  { id: 'ast-parsing', icon: Code2, title: 'AST Parsing', desc: 'Break down scripts into Abstract Syntax Trees to detect structural patterns.' },
-  { id: 'smart-fixes', icon: Cpu, title: 'Smart Fixes', desc: 'Generate context-aware corrective code blocks automatically.' },
-  { id: 'database-logs', icon: Database, title: 'Database Logs', desc: 'Store scan telemetry safely for iterative review and tracking.' },
-];
-
-function FeatureCard({ icon: Icon, title, desc }) {
-  return (
-    <div className="card p-8 space-y-4">
-      <span className="flex items-center justify-center w-10 h-10 border border-line rounded-md text-ink" aria-hidden="true">
-        <Icon size={18} aria-hidden="true" />
-      </span>
-      <h3 className="font-semibold text-ink text-lg">{title}</h3>
-      <p className="text-muted text-sm leading-relaxed">{desc}</p>
-    </div>
-  );
-}
+import { Zap, Globe, BarChart3, ArrowRight, ShieldCheck, Cpu, Terminal, Users, TrendingUp, Activity, Layers, Sparkles, Code2, Database, ShieldAlert, GitBranch, Lock, CheckCircle2, Award, ZapOff, Server } from 'lucide-react';
 
 export default function Home({ setCurrentView }) {
   return (
-    <div className="page-container max-w-4xl">
-      <div className="space-y-20">
-        <section className="space-y-6" aria-label="Introduction">
-          <div className="space-y-4">
-            <span className="badge bg-surface2 text-ink border border-line">Next-Gen AST Static Analysis Platform</span>
-            <h1 className="text-4xl sm:text-6xl font-bold tracking-tighter text-ink">
-              Debug code faster than ever
-            </h1>
-            <p className="text-muted text-lg max-w-xl leading-relaxed">
-              Analyze code architecture, detect vulnerabilities instantly using Abstract Syntax Trees, and auto-generate fixes.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <button onClick={() => setCurrentView('signup')} className="btn btn-primary">
-                <span>Start Analyzing Code</span>
-                <ArrowRight size={16} aria-hidden="true" />
-              </button>
-              <button onClick={() => setCurrentView('login')} className="btn btn-ghost">
-                View Database Logs
-              </button>
+    <div className="space-y-0 pb-24">
+      {/* 1. Hero Section */}
+      <section className="relative pt-32 pb-24 px-6 bg-linear-to-b from-white via-indigo-50/30 to-white border-b border-indigo-100/50 overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{animationDelay: '2s'}}></div>
+        </div>
+
+        <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10 animate-slideUp">
+          <div className="inline-flex items-center space-x-2 bg-linear-to-r from-indigo-50 to-blue-50 border border-indigo-200 text-indigo-700 px-4 py-2 rounded-full text-xs font-semibold shadow-sm hover:shadow-md transition-shadow">
+            <Sparkles className="w-4 h-4 text-indigo-600 animate-pulse" />
+            <span>Next-Gen AST Static Analysis Platform</span>
+          </div>
+          
+          <h1 className="text-5xl sm:text-7xl font-black text-slate-900 tracking-tighter leading-tight">
+            Debug <span className="bg-linear-to-r from-indigo-600 via-blue-600 to-purple-600 text-transparent bg-clip-text">code faster</span> than ever
+          </h1>
+          
+          <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed font-medium">
+            Analyze code architecture, detect vulnerabilities instantly using Abstract Syntax Trees, and auto-generate fixes with Debugique.
+          </p>
+          
+          <div className="pt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
+            <button
+              onClick={() => setCurrentView('analyzer')}
+              className="w-full sm:w-auto bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-indigo-500/40 transition-all duration-300 flex items-center justify-center space-x-2 hover:scale-105 group"
+            >
+              <span>Start Analyzing Code</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </button>
+            <button
+              onClick={() => setCurrentView('history')}
+              className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-700 font-bold px-8 py-4 rounded-xl border-2 border-slate-200 hover:border-indigo-300 transition-all duration-300 shadow-sm hover:shadow-md"
+            >
+              View Database Logs
+            </button>
+          </div>
+          
+          <p className="text-xs text-slate-400 pt-2">✨ No setup required • Real-time analysis • Instant fixes</p>
+        </div>
+
+        {/* Hero Visual Mockup Preview */}
+        <div className="max-w-5xl mx-auto mt-16 relative rounded-2xl overflow-hidden shadow-2xl border border-slate-200 bg-slate-900 p-4 animate-slideUp" style={{animationDelay: '0.2s'}}>
+          <div className="absolute inset-0 bg-linear-to-br from-indigo-600/10 via-transparent to-purple-600/10 pointer-events-none"></div>
+          <div className="flex items-center justify-between pb-4 border-b border-slate-800 px-4">
+            <div className="flex space-x-2">
+              <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
+              <div className="w-3 h-3 rounded-full bg-amber-500 animate-pulse" style={{animationDelay: '0.2s'}}></div>
+              <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" style={{animationDelay: '0.4s'}}></div>
+            </div>
+            <span className="text-xs text-slate-400 font-mono">Live Scan: Acorn Engine Parser Active</span>
+            <div className="text-xs bg-linear-to-r from-emerald-600 to-emerald-700 text-white px-3 py-1 rounded font-mono font-semibold">Ready</div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 px-4">
+            <div className="bg-linear-to-br from-slate-800/90 to-slate-900/50 p-5 rounded-xl border border-slate-700/50 text-left space-y-2 hover:border-emerald-500/30 transition-all duration-300 hover:bg-slate-800/95">
+              <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">AST Parsing</span>
+              <div className="text-lg font-bold text-emerald-400">Active Syntax Tree</div>
+              <span className="text-[11px] text-slate-500">Parses code trees via Acorn instead of regex patterns.</span>
+            </div>
+            <div className="bg-linear-to-br from-slate-800/90 to-slate-900/50 p-5 rounded-xl border border-slate-700/50 text-left space-y-2 hover:border-indigo-500/30 transition-all duration-300 hover:bg-slate-800/95">
+              <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Smart Fixes</span>
+              <div className="text-lg font-bold text-indigo-400">Auto Refactoring</div>
+              <span className="text-[11px] text-slate-500">Instant actionable code suggestions for every bug.</span>
+            </div>
+            <div className="bg-linear-to-br from-slate-800/90 to-slate-900/50 p-5 rounded-xl border border-slate-700/50 text-left space-y-2 hover:border-amber-500/30 transition-all duration-300 hover:bg-slate-800/95">
+              <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Database</span>
+              <div className="text-lg font-bold text-amber-400">Persistent Logs</div>
+              <span className="text-[11px] text-slate-500">Complete history of all scan results and analysis.</span>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="grid md:grid-cols-3 gap-6" aria-label="Key features">
-          {FEATURES.map((feature) => (
-            <FeatureCard key={feature.id} {...feature} />
+      {/* 2. Core Capabilities Section */}
+      <section className="max-w-7xl mx-auto px-6 py-24">
+        <div className="text-center max-w-2xl mx-auto space-y-4 mb-16 animate-slideUp">
+          <h2 className="text-4xl font-bold text-slate-900 tracking-tight">Comprehensive code intelligence</h2>
+          <p className="text-slate-600 text-base leading-relaxed">Everything you need to catch bugs and refactor code seamlessly.</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {[
+            { icon: Code2, title: 'AST Parsing', desc: 'Break down scripts into deep Abstract Syntax Trees to detect structural patterns.' },
+            { icon: Cpu, title: 'Smart Fixes', desc: 'Generate context-aware corrective code blocks automatically.' },
+            { icon: Database, title: 'Database Logs', desc: 'Store scan telemetry safely for iterative review and tracking.' }
+          ].map((item, i) => (
+            <div 
+              key={i} 
+              className="p-8 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-xl hover:border-indigo-300 transition-all duration-300 space-y-4 hover:-translate-y-1 animate-slideUp" 
+              style={{animationDelay: `${i * 0.1}s`}}
+            >
+              <div className="w-14 h-14 bg-linear-to-br from-indigo-100 to-blue-100 rounded-xl flex items-center justify-center text-indigo-600 shadow-sm">
+                <item.icon size={28} />
+              </div>
+              <h3 className="font-bold text-slate-900 text-lg">{item.title}</h3>
+              <p className="text-slate-500 text-sm leading-relaxed">{item.desc}</p>
+            </div>
           ))}
-        </section>
-      </div>
+        </div>
+      </section>
+
+      {/* 3. Workflow Pipeline Section */}
+      <section className="bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-24 px-6 my-12 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-indigo-500/10 rounded-full mix-blend-screen filter blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full mix-blend-screen filter blur-3xl"></div>
+        </div>
+
+        <div className="max-w-6xl mx-auto space-y-16 relative z-10">
+          <div className="text-center space-y-4 max-w-2xl mx-auto animate-slideUp">
+            <span className="inline-block text-indigo-400 text-xs font-bold uppercase tracking-wider bg-indigo-950/50 px-4 py-2 rounded-full border border-indigo-500/30">Streamlined Pipeline</span>
+            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight">An efficient static analysis workflow</h2>
+            <p className="text-slate-300 text-base leading-relaxed">Analyze, trace, and patch vulnerabilities in three simple steps.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { num: '1', title: 'Ingest source code', desc: 'Paste your JavaScript or frontend code directly into the parser engine.' },
+              { num: '2', title: 'Detect deep flaws', desc: 'Uncover anti-patterns, missing blocks, and security vulnerabilities.' },
+              { num: '3', title: 'Log & optimize', desc: 'Archive reports to history and deploy optimized code seamlessly.' }
+            ].map((step, i) => (
+              <div 
+                key={i} 
+                className="bg-white/5 backdrop-blur-sm p-8 rounded-2xl border border-white/10 hover:border-indigo-500/50 space-y-4 transition-all duration-300 hover:bg-white/10 hover:-translate-y-1 animate-slideUp group"
+                style={{animationDelay: `${i * 0.15}s`}}
+              >
+                <div className="w-12 h-12 bg-linear-to-br from-indigo-500 to-blue-500 text-white rounded-xl flex items-center justify-center font-bold text-lg shadow-lg group-hover:scale-110 transition-transform">{step.num}</div>
+                <h3 className="font-bold text-xl text-white">{step.title}</h3>
+                <p className="text-slate-300 text-sm leading-relaxed">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Deep Inspection & Metrics Section */}
+      <section className="max-w-7xl mx-auto px-6 py-24 space-y-12">
+        <div className="text-center max-w-2xl mx-auto space-y-4 animate-slideUp">
+          <h2 className="text-4xl font-bold text-slate-900 tracking-tight">Built for high-performance developers</h2>
+          <p className="text-slate-500 text-base leading-relaxed">Engineered to handle complex syntax without breaking your pipeline.</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8">
+          {[
+            { icon: GitBranch, title: 'Granular Syntax Breakdown', desc: 'Complete AST hierarchy analysis instead of simple pattern matching. Catches nested scope issues and promise handling.' },
+            { icon: Lock, title: 'Secure Execution', desc: 'Sandboxed parsing environment ensures your code never leaves your system.' },
+            { icon: TrendingUp, title: 'Performance Metrics', desc: 'Track code quality improvements across scans with detailed analytics.' },
+            { icon: Award, title: 'Actionable Insights', desc: 'Not just bugs—get recommendations for best practices and optimization opportunities.' }
+          ].map((item, i) => (
+            <div 
+              key={i} 
+              className="p-8 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 space-y-4 hover:border-indigo-300 animate-slideUp"
+              style={{animationDelay: `${i * 0.1}s`}}
+            >
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-linear-to-br from-indigo-100 to-blue-100 text-indigo-600 rounded-lg shadow-sm">
+                  <item.icon size={24} />
+                </div>
+                <h3 className="font-bold text-slate-900 text-lg">{item.title}</h3>
+              </div>
+              <p className="text-slate-600 text-sm leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 5. CTA Section */}
+      <section className="max-w-4xl mx-auto px-6 py-20 text-center space-y-8">
+        <div className="space-y-4 animate-slideUp">
+          <h2 className="text-4xl font-bold text-slate-900 tracking-tight">Ready to optimize your code?</h2>
+          <p className="text-lg text-slate-600 leading-relaxed">Join developers who are catching bugs before production.</p>
+        </div>
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+          <button
+            onClick={() => setCurrentView('analyzer')}
+            className="w-full sm:w-auto bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-indigo-500/40 transition-all duration-300 hover:scale-105"
+          >
+            Get Started Now
+          </button>
+          <button
+            onClick={() => setCurrentView('home')}
+            className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold px-8 py-4 rounded-xl transition-all duration-300"
+          >
+            Learn More
+          </button>
+        </div>
+      </section>
     </div>
   );
 }

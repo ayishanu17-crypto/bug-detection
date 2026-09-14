@@ -1,70 +1,38 @@
-import { ShieldAlert, Sun, Moon, LogOut } from 'lucide-react';
+import { ShieldAlert, ChevronDown } from 'lucide-react';
 
-const NAV_LINKS = [
-  { view: 'analyzer', label: 'Analyzer' },
-  { view: 'history', label: 'History' },
-  { view: 'rules', label: 'Rules' },
-  { view: 'cicd', label: 'CI/CD' },
-  { view: 'alerts', label: 'Alerts' },
-  { view: 'settings', label: 'Settings' },
-];
-
-export default function Navbar({ setCurrentView, isLoggedIn, theme, toggleTheme, currentView, user, onLogout }) {
+export default function Navbar({ setCurrentView, isLoggedIn }) {
   return (
-    <header className="sticky top-0 z-50 glass border-b border-white/40">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-6 min-w-0">
-          <button
+    <header className="sticky top-0 z-50 animate-slideDown">
+      <div className="absolute inset-0 bg-white/95 backdrop-blur-md border-b border-slate-200/50"></div>
+      <div className="relative max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center space-x-8">
+          <div 
+            className="flex items-center space-x-3 cursor-pointer hover:scale-105 transition-transform duration-300" 
             onClick={() => setCurrentView('home')}
-            className="flex items-center gap-2.5 shrink-0"
-            aria-label="Debugique home"
           >
-            <span className="clay-accent flex items-center justify-center w-9 h-9 rounded-xl">
-              <ShieldAlert size={18} />
-            </span>
-            <span className="text-lg font-bold tracking-tight text-ink leading-none">Debugique</span>
-          </button>
-          {isLoggedIn && (
-            <nav className="hidden md:flex items-center gap-1 overflow-x-auto">
-              {NAV_LINKS.map((item) => (
-                <button
-                  key={item.view}
-                  onClick={() => setCurrentView(item.view)}
-                  className={`navlink ${currentView === item.view ? 'active' : ''}`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </nav>
-          )}
+            <div className="bg-linear-to-br from-indigo-600 to-indigo-700 p-2 rounded-lg text-white shadow-lg hover:shadow-indigo-500/50 transition-all duration-300 animate-glow">
+              <ShieldAlert size={20} />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold tracking-tight text-slate-900 leading-none">Debugique</span>
+              <span className="text-[10px] text-slate-500 font-semibold">Code Intelligence</span>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={toggleTheme}
-            className="theme-btn"
-            title="Toggle light/dark theme"
-            aria-label="Toggle theme"
-          >
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
-          {!isLoggedIn ? (
+        <div className="flex items-center space-x-3">
+          {!isLoggedIn && (
             <>
-              <button onClick={() => setCurrentView('login')} className="btn btn-glass">Log In</button>
-              <button onClick={() => setCurrentView('signup')} className="btn btn-clay-accent">Get started</button>
-            </>
-          ) : (
-            <>
-              {user?.email && (
-                <span
-                  className="hidden lg:block text-sm font-semibold text-muted max-w-[160px] truncate"
-                  title={user.email}
-                >
-                  {user.email}
-                </span>
-              )}
-              <button onClick={onLogout} className="btn btn-ghost" title="Log out">
-                <LogOut size={16} />
-                <span>Log Out</span>
+              <button 
+                onClick={() => setCurrentView('login')} 
+                className="text-sm font-semibold text-slate-600 hover:text-indigo-600 px-4 py-2 rounded-lg transition-all duration-300 hover:bg-slate-100"
+              >
+                Log In
+              </button>
+              <button 
+                onClick={() => setCurrentView('signup')} 
+                className="bg-linear-to-r from-indigo-600 to-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:shadow-lg hover:shadow-indigo-500/30 transition-all duration-300 hover:scale-105"
+              >
+                Get started
               </button>
             </>
           )}

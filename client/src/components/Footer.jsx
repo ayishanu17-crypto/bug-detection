@@ -1,48 +1,74 @@
-import { Mail, AtSign, Globe, Briefcase } from 'lucide-react';
+import { Code2, Share2, Globe, Mail } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="glass border-t border-white/40 py-10 px-6 mt-auto">
-      <div className="max-w-7xl mx-auto grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="space-y-3">
-          <h3 className="font-black text-ink text-lg tracking-tight">Debugique</h3>
-          <p className="text-xs text-muted leading-relaxed max-w-sm">
-            Analyze architecture, catch vulnerabilities with AST-powered static analysis, and apply instant fixes for JS, Python, C/C++ and Java.
-          </p>
+    <footer className="bg-linear-to-b from-slate-900 via-slate-950 to-slate-900 text-slate-300 pt-20 pb-8 px-6 border-t border-slate-800/50">
+      <div className="max-w-7xl mx-auto">
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
+          <div className="lg:col-span-1">
+            <div className="space-y-3">
+              <span className="font-black text-2xl text-white">Debugique</span>
+              <p className="text-sm text-slate-400 leading-relaxed">Advanced AST-based code analysis for modern developers.</p>
+              <div className="flex items-center space-x-3 pt-4">
+                <a href="#" className="p-2 bg-slate-800 hover:bg-indigo-600 rounded-lg transition-colors duration-300">
+                  <Code2 size={16} className="text-slate-300" />
+                </a>
+                <a href="#" className="p-2 bg-slate-800 hover:bg-blue-600 rounded-lg transition-colors duration-300">
+                  <Share2 size={16} className="text-slate-300" />
+                </a>
+                <a href="#" className="p-2 bg-slate-800 hover:bg-blue-600 rounded-lg transition-colors duration-300">
+                  <Globe size={16} className="text-slate-300" />
+                </a>
+                <a href="#" className="p-2 bg-slate-800 hover:bg-red-600 rounded-lg transition-colors duration-300">
+                  <Mail size={16} className="text-slate-300" />
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {[
+            { 
+              title: 'Product', 
+              links: ['Features', 'Pricing', 'Security', 'Roadmap'] 
+            },
+            { 
+              title: 'Resources', 
+              links: ['Documentation', 'API Reference', 'Blog', 'Changelog'] 
+            },
+            { 
+              title: 'Company', 
+              links: ['About Us', 'Careers', 'Contact', 'Support'] 
+            },
+            { 
+              title: 'Legal', 
+              links: ['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Contact'] 
+            }
+          ].map((col, idx) => (
+            <div key={idx} className="animate-slideUp" style={{animationDelay: `${idx * 0.1}s`}}>
+              <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">{col.title}</h4>
+              <ul className="space-y-3">
+                {col.links.map((link, i) => (
+                  <li key={i}>
+                    <a href="#" className="text-sm text-slate-400 hover:text-indigo-400 transition-colors duration-300">{link}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
-        <div className="space-y-3">
-          <h4 className="font-bold text-ink text-sm">Quick Links</h4>
-          <ul className="space-y-2 text-xs text-muted">
-            <li><a href="#home" className="hover:text-accent transition-colors">Home</a></li>
-            <li><a href="#analyzer" className="hover:text-accent transition-colors">Analyzer</a></li>
-            <li><a href="#history" className="hover:text-accent transition-colors">Scan History</a></li>
-            <li><a href="#settings" className="hover:text-accent transition-colors">Settings</a></li>
-          </ul>
-        </div>
-
-        <div className="space-y-3">
-          <h4 className="font-bold text-ink text-sm">Contact Us</h4>
-          <div className="space-y-2.5 text-xs text-muted">
-            <a href="mailto:support@debugique.com" className="flex items-center gap-2 hover:text-accent transition-colors">
-              <Mail size={14} /> support@debugique.com
-            </a>
-            <a href="https://github.com/debugique" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-accent transition-colors">
-              <AtSign size={14} /> @debugique on GitHub
-            </a>
-            <a href="https://x.com/debugique" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-accent transition-colors">
-              <Globe size={14} /> @debugique on X
-            </a>
-            <a href="https://linkedin.com/company/debugique" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-accent transition-colors">
-              <Briefcase size={14} /> /company/debugique
-            </a>
+        {/* Divider */}
+        <div className="border-t border-slate-800/50 pt-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-slate-500">© 2026 Debugique Ltd. All rights reserved.</p>
+            <div className="flex items-center space-x-1 text-xs text-slate-500">
+              <span>Made with</span>
+              <span className="text-red-500 animate-pulse">❤</span>
+              <span>by Debugique Team</span>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto border-t border-white/40 mt-8 pt-4 flex flex-col sm:flex-row items-center justify-between text-xs text-muted gap-2">
-        <p>© 2026 Debugique Ltd. All rights reserved.</p>
-        <p>Made with care by Debugique Team</p>
       </div>
     </footer>
   );
