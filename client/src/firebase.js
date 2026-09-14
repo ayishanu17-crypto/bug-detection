@@ -24,23 +24,44 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-if (!firebaseConfig.apiKey && import.meta.env.DEV) {
-  console.warn("⚠️ Firebase configuration missing! Please create a client/.env file with VITE_FIREBASE_* keys.");
+const hasFirebaseConfig = [
+  firebaseConfig.apiKey,
+  firebaseConfig.authDomain,
+  firebaseConfig.projectId,
+  firebaseConfig.appId
+].every(Boolean);
+
+if (!hasFirebaseConfig) {
+  console.warn('Firebase configuration is missing; authentication is disabled.');
 }
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Keep the public app usable when optional Firebase deployment variables are absent.
+const app = hasFirebaseConfig ? initializeApp(firebaseConfig) : null;
 
 // Analytics is optional and fails silently in environments that don't support it.
 let analytics = null;
 try {
+  if (!app) throw new Error('Firebase is not configured.');
   analytics = getAnalytics(app);
 } catch (err) {
-  console.warn("Firebase Analytics unavailable:", err && err.message);
+  if (hasFirebaseConfig) {
+    console.warn('Firebase Analytics unavailable:', err && err.message);
+  }
 }
 
 // Authentication
-const auth = getAuth(app);
+const auth = app ? getAuth(app) : null;
+
+const subscribeToAuth = auth
+  ? onAuthStateChanged
+  : (_auth, callback) => {
+      callback(null);
+      return () => {};
+    };
+
+const signOutUser = auth
+  ? signOut
+  : async () => {};
 
 export {
   app,
@@ -48,7 +69,7 @@ export {
   analytics,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
+  signOutUser as signOut,
+  subscribeToAuth as onAuthStateChanged,
   updateProfile
 };
