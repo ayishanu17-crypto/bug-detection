@@ -1,6 +1,43 @@
-import { ShieldAlert, User, Mail, Lock, CheckCircle2, ArrowRight, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { ShieldAlert, User, Mail, Lock, CheckCircle2, ArrowRight, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
+import { auth, createUserWithEmailAndPassword, updateProfile } from '../firebase';
+import { getAuthErrorMessage } from '../authErrors';
 
-export default function Signup({ setCurrentView }) {
+export default function Signup({ setCurrentView, onAuthSuccess }) {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!auth) {
+      setError('Authentication is not configured on this deployment. Add your Firebase credentials to client/.env and restart the app.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+      const displayName = `${firstName.trim()} ${lastName.trim()}`.trim();
+      try {
+        await updateProfile(userCredential.user, { displayName: displayName || undefined });
+      } catch (profileErr) {
+        // Non-fatal — the account still exists even if the display name can't be saved.
+        console.warn('Could not update display name:', profileErr);
+      }
+      if (onAuthSuccess) onAuthSuccess(userCredential.user);
+    } catch (err) {
+      setError(getAuthErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-6 py-12 bg-linear-to-br from-slate-50 via-white to-indigo-50/30 relative overflow-hidden">
       {/* Background decoration */}
@@ -20,7 +57,6 @@ export default function Signup({ setCurrentView }) {
               <p className="text-xs text-slate-500 font-semibold">Code Intelligence</p>
             </div>
           </div>
-          
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-slate-900 mb-2 text-center">Start for free</h2>
             <p className="text-slate-600 text-center text-sm flex items-center justify-center space-x-2">
@@ -29,15 +65,18 @@ export default function Signup({ setCurrentView }) {
             </p>
           </div>
           
-          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setCurrentView('dashboard'); }}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="grid grid-cols-2 gap-4 animate-slideUp" style={{animationDelay: '0.1s'}}>
               <div className="relative">
                 <div className="absolute left-3 top-3 text-indigo-600"><User size={18} /></div>
                 <input 
                   type="text" 
                   placeholder="First name" 
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
                   className="w-full p-3.5 pl-10 border border-slate-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition-all bg-white/50" 
                   required 
+                  autoComplete="given-name"
                 />
               </div>
               <div className="relative">
@@ -45,19 +84,24 @@ export default function Signup({ setCurrentView }) {
                 <input 
                   type="text" 
                   placeholder="Last name" 
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
                   className="w-full p-3.5 pl-10 border border-slate-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition-all bg-white/50" 
                   required 
+                  autoComplete="family-name"
                 />
               </div>
             </div>
-            
-            <div className="relative animate-slideUp" style={{animationDelay: '0.2s'}}>
+<div className="relative animate-slideUp" style={{animationDelay: '0.2s'}}>
               <div className="absolute left-3 top-3 text-indigo-600"><Mail size={18} /></div>
               <input 
                 type="email" 
                 placeholder="Work email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full p-3.5 pl-10 border border-slate-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition-all bg-white/50" 
                 required 
+                autoComplete="email"
               />
             </div>
             
@@ -66,21 +110,41 @@ export default function Signup({ setCurrentView }) {
               <input 
                 type="password" 
                 placeholder="Create password" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full p-3.5 pl-10 border border-slate-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition-all bg-white/50" 
                 required 
+                minLength={6}
+                autoComplete="new-password"
               />
             </div>
+
+            {error && (
+              <div className="flex items-start space-x-2 text-sm text-red-700 bg-red-50 border border-red-200/50 rounded-xl p-3 animate-slideUp" role="alert">
+                <AlertCircle size={18} className="mt-0.5 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
             
             <button 
               type="submit" 
-              className="w-full bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white py-3.5 rounded-xl font-bold shadow-lg hover:shadow-indigo-500/40 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 animate-slideUp" 
+              disabled={loading}
+              className="w-full bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white py-3.5 rounded-xl font-bold shadow-lg hover:shadow-indigo-500/40 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 animate-slideUp disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100" 
               style={{animationDelay: '0.4s'}}
             >
-              <span>Create Account</span>
-              <ArrowRight size={18} />
+              {loading ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  <span>Creating account…</span>
+                </>
+              ) : (
+                <>
+                  <span>Create Account</span>
+                  <ArrowRight size={18} />
+                </>
+              )}
             </button>
           </form>
-          
           <div className="mt-6 p-4 bg-linear-to-r from-emerald-50 to-emerald-100/50 rounded-xl border border-emerald-200/50 space-y-2">
             <div className="flex items-start space-x-2 text-xs text-emerald-700">
               <CheckCircle2 size={16} className="mt-0.5 shrink-0" />

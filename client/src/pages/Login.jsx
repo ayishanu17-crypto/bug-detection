@@ -1,6 +1,34 @@
-import { ShieldAlert, Mail, Lock, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { ShieldAlert, Mail, Lock, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
+import { auth, signInWithEmailAndPassword } from '../firebase';
+import { getAuthErrorMessage } from '../authErrors';
 
-export default function Login({ setCurrentView }) {
+export default function Login({ setCurrentView, onAuthSuccess }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!auth) {
+      setError('Authentication is not configured on this deployment. Add your Firebase credentials to client/.env and restart the app.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+      if (onAuthSuccess) onAuthSuccess(userCredential.user);
+    } catch (err) {
+      setError(getAuthErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-6 py-12 bg-linear-to-br from-slate-50 via-white to-indigo-50/30 relative overflow-hidden">
       {/* Background decoration */}
@@ -20,20 +48,22 @@ export default function Login({ setCurrentView }) {
               <p className="text-xs text-slate-500 font-semibold">Code Intelligence</p>
             </div>
           </div>
-          
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-slate-900 mb-2 text-center">Welcome back</h2>
             <p className="text-slate-600 text-center text-sm">Log in to access your code analysis dashboard</p>
           </div>
           
-          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setCurrentView('dashboard'); }}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="relative animate-slideUp" style={{animationDelay: '0.1s'}}>
               <div className="absolute left-3 top-3 text-indigo-600"><Mail size={20} /></div>
               <input 
                 type="email" 
                 placeholder="Email address" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full p-3.5 pl-10 border border-slate-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition-all bg-white/50" 
                 required 
+                autoComplete="email"
               />
             </div>
             
@@ -42,21 +72,40 @@ export default function Login({ setCurrentView }) {
               <input 
                 type="password" 
                 placeholder="Password" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full p-3.5 pl-10 border border-slate-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition-all bg-white/50" 
                 required 
+                autoComplete="current-password"
               />
             </div>
+
+            {error && (
+              <div className="flex items-start space-x-2 text-sm text-red-700 bg-red-50 border border-red-200/50 rounded-xl p-3 animate-slideUp" role="alert">
+                <AlertCircle size={18} className="mt-0.5 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
             
             <button 
               type="submit" 
-              className="w-full bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white py-3.5 rounded-xl font-bold shadow-lg hover:shadow-indigo-500/40 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 animate-slideUp" 
+              disabled={loading}
+              className="w-full bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white py-3.5 rounded-xl font-bold shadow-lg hover:shadow-indigo-500/40 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 animate-slideUp disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100" 
               style={{animationDelay: '0.3s'}}
             >
-              <span>Log In</span>
-              <ArrowRight size={18} />
+              {loading ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  <span>Logging in…</span>
+                </>
+              ) : (
+                <>
+                  <span>Log In</span>
+                  <ArrowRight size={18} />
+                </>
+              )}
             </button>
           </form>
-          
           <div className="mt-6 relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-200"></div>
