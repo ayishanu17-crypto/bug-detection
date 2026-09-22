@@ -1,5 +1,218 @@
 [
   {
+    "_id": "local-1790053852549",
+    "codeSnippet": "import { StrictMode } from 'react\nimport { createRoot } from 'react-dom/client'\nimport './index.css'\nimport App from './App.jsx'\nimport ErrorBoundary from './components/ErrorBoundary.jsx'\n\ncreateRoot(document.getElementById('root')).render(\n  <StrictMode>\n    <ErrorBoundary\n      <App />\n    </ErrorBoundary>\n  </StrictMode>,\n)",
+    "language": "python",
+    "totalIssues": 1,
+    "issuesFound": [
+      {
+        "line": 1,
+        "col": 28,
+        "ruleName": "Syntax Error",
+        "severity": "HIGH",
+        "message": "Syntax error: unterminated string literal (detected at line 1) — \"import { StrictMode } from 'react\"",
+        "snippet": "import { StrictMode } from 'react",
+        "suggestedFix": "Replace this line with: import { StrictMode } from 'react'"
+      }
+    ],
+    "correctedCode": null,
+    "createdAt": "2026-09-22T05:10:52.553Z"
+  },
+  {
+    "_id": "local-1790053450327",
+    "codeSnippet": "import { StrictMode } from 'react\nimport { createRoot } from 'react-dom/client'\nimport './index.css'\nimport App from './App.jsx'\nimport ErrorBoundary from './components/ErrorBoundary.jsx'\n\ncreateRoot(document.getElementById('root')).render(\n  <StrictMode\n    <ErrorBoundary>\n      <App />\n    </ErrorBoundary>\n  </StrictMode>,\n)",
+    "language": "javascript",
+    "totalIssues": 6,
+    "issuesFound": [
+      {
+        "line": 1,
+        "col": 27,
+        "ruleName": "Syntax Error (auto-fixed)",
+        "severity": "HIGH",
+        "message": "Unterminated string constant (1:27) — a corrected program was generated automatically.",
+        "snippet": "import { StrictMode } from 'react",
+        "suggestedFix": "\nimport { createRoot } from 'react-dom/client'\nimport './index.css'\nimport App from './App.jsx'\nimport ErrorBoundary from './components/ErrorBoundary.jsx'\n\ncreateRoot(document.getElementById('root')).render(\n\n\n\n\n\n)"
+      },
+      {
+        "line": 8,
+        "col": 2,
+        "ruleName": "Syntax Error (auto-fixed)",
+        "severity": "HIGH",
+        "message": "Unexpected token (8:2) — a corrected program was generated automatically.",
+        "snippet": "<StrictMode",
+        "suggestedFix": "\nimport { createRoot } from 'react-dom/client'\nimport './index.css'\nimport App from './App.jsx'\nimport ErrorBoundary from './components/ErrorBoundary.jsx'\n\ncreateRoot(document.getElementById('root')).render(\n\n\n\n\n\n)"
+      },
+      {
+        "line": 9,
+        "col": 4,
+        "ruleName": "Syntax Error (auto-fixed)",
+        "severity": "HIGH",
+        "message": "Unexpected token (9:4) — a corrected program was generated automatically.",
+        "snippet": "<ErrorBoundary>",
+        "suggestedFix": "\nimport { createRoot } from 'react-dom/client'\nimport './index.css'\nimport App from './App.jsx'\nimport ErrorBoundary from './components/ErrorBoundary.jsx'\n\ncreateRoot(document.getElementById('root')).render(\n\n\n\n\n\n)"
+      },
+      {
+        "line": 10,
+        "col": 6,
+        "ruleName": "Syntax Error (auto-fixed)",
+        "severity": "HIGH",
+        "message": "Unexpected token (10:6) — a corrected program was generated automatically.",
+        "snippet": "<App />",
+        "suggestedFix": "\nimport { createRoot } from 'react-dom/client'\nimport './index.css'\nimport App from './App.jsx'\nimport ErrorBoundary from './components/ErrorBoundary.jsx'\n\ncreateRoot(document.getElementById('root')).render(\n\n\n\n\n\n)"
+      },
+      {
+        "line": 11,
+        "col": 4,
+        "ruleName": "Syntax Error (auto-fixed)",
+        "severity": "HIGH",
+        "message": "Unexpected token (11:4) — a corrected program was generated automatically.",
+        "snippet": "</ErrorBoundary>",
+        "suggestedFix": "\nimport { createRoot } from 'react-dom/client'\nimport './index.css'\nimport App from './App.jsx'\nimport ErrorBoundary from './components/ErrorBoundary.jsx'\n\ncreateRoot(document.getElementById('root')).render(\n\n\n\n\n\n)"
+      },
+      {
+        "line": 12,
+        "col": 2,
+        "ruleName": "Syntax Error (auto-fixed)",
+        "severity": "HIGH",
+        "message": "Unexpected token (12:2) — a corrected program was generated automatically.",
+        "snippet": "</StrictMode>,",
+        "suggestedFix": "\nimport { createRoot } from 'react-dom/client'\nimport './index.css'\nimport App from './App.jsx'\nimport ErrorBoundary from './components/ErrorBoundary.jsx'\n\ncreateRoot(document.getElementById('root')).render(\n\n\n\n\n\n)"
+      }
+    ],
+    "correctedCode": "\nimport { createRoot } from 'react-dom/client'\nimport './index.css'\nimport App from './App.jsx'\nimport ErrorBoundary from './components/ErrorBoundary.jsx'\n\ncreateRoot(document.getElementById('root')).render(\n\n\n\n\n\n)",
+    "createdAt": "2026-09-22T05:04:10.327Z"
+  },
+  {
+    "_id": "local-1790053351866",
+    "codeSnippet": "if (x = 5) { alert(\"five\"); }",
+    "language": "javascript",
+    "totalIssues": 2,
+    "issuesFound": [
+      {
+        "line": 1,
+        "col": 4,
+        "ruleName": "Assignment in Condition",
+        "severity": "HIGH",
+        "message": "Assignment (=) used as a condition — this is almost always a bug. Did you mean a comparison (===)?",
+        "snippet": "... = ...",
+        "suggestedFix": "Use === to compare, or extract the assignment onto its own line and test the result."
+      },
+      {
+        "line": 1,
+        "col": 4,
+        "ruleName": "Undefined Variable",
+        "severity": "HIGH",
+        "message": "\"x\" is used but never declared in this code.",
+        "snippet": "x",
+        "suggestedFix": "Declare x first (const/let/var), pass it in as a parameter, or check for a typo in the name."
+      }
+    ],
+    "correctedCode": "if (x === 5) { alert(\"five\"); }",
+    "createdAt": "2026-09-22T05:02:31.866Z"
+  },
+  {
+    "_id": "local-1790053336936",
+    "codeSnippet": "if (x = 5) { alert(\"five\"); }",
+    "language": "javascript",
+    "totalIssues": 2,
+    "issuesFound": [
+      {
+        "line": 1,
+        "col": 4,
+        "ruleName": "Assignment in Condition",
+        "severity": "HIGH",
+        "message": "Assignment (=) used as a condition — this is almost always a bug. Did you mean a comparison (===)?",
+        "snippet": "... = ...",
+        "suggestedFix": "Use === to compare, or extract the assignment onto its own line and test the result."
+      },
+      {
+        "line": 1,
+        "col": 4,
+        "ruleName": "Undefined Variable",
+        "severity": "HIGH",
+        "message": "\"x\" is used but never declared in this code.",
+        "snippet": "x",
+        "suggestedFix": "Declare x first (const/let/var), pass it in as a parameter, or check for a typo in the name."
+      }
+    ],
+    "correctedCode": "if (x === 5) { alert(\"five\"); }",
+    "createdAt": "2026-09-22T05:02:16.936Z"
+  },
+  {
+    "_id": "local-1790053307354",
+    "codeSnippet": "if (x = 5) { alert(\"five\"); }",
+    "language": "javascript",
+    "totalIssues": 2,
+    "issuesFound": [
+      {
+        "line": 1,
+        "col": 4,
+        "ruleName": "Assignment in Condition",
+        "severity": "HIGH",
+        "message": "Assignment (=) used as a condition — this is almost always a bug. Did you mean a comparison (===)?",
+        "snippet": "... = ...",
+        "suggestedFix": "Use === to compare, or extract the assignment onto its own line and test the result."
+      },
+      {
+        "line": 1,
+        "col": 4,
+        "ruleName": "Undefined Variable",
+        "severity": "HIGH",
+        "message": "\"x\" is used but never declared in this code.",
+        "snippet": "x",
+        "suggestedFix": "Declare x first (const/let/var), pass it in as a parameter, or check for a typo in the name."
+      }
+    ],
+    "correctedCode": "if (x === 5) { alert(\"five\"); }",
+    "createdAt": "2026-09-22T05:01:47.354Z"
+  },
+  {
+    "_id": "local-1790053072164",
+    "codeSnippet": "if (x = 5) { alert(\"five\"); }",
+    "language": "javascript",
+    "totalIssues": 2,
+    "issuesFound": [
+      {
+        "line": 1,
+        "col": 4,
+        "ruleName": "Assignment in Condition",
+        "severity": "HIGH",
+        "message": "Assignment (=) used as a condition — this is almost always a bug. Did you mean a comparison (===)?",
+        "snippet": "... = ...",
+        "suggestedFix": "Use === to compare, or extract the assignment onto its own line and test the result."
+      },
+      {
+        "line": 1,
+        "col": 4,
+        "ruleName": "Undefined Variable",
+        "severity": "HIGH",
+        "message": "\"x\" is used but never declared in this code.",
+        "snippet": "x",
+        "suggestedFix": "Declare x first (const/let/var), pass it in as a parameter, or check for a typo in the name."
+      }
+    ],
+    "correctedCode": "if (x === 5) { alert(\"five\"); }",
+    "createdAt": "2026-09-22T04:57:52.164Z"
+  },
+  {
+    "_id": "local-1789401307533",
+    "codeSnippet": "def calculate_average(numbers):\n    total = 0\n\n    for num in numbers\n        total += num\n\n    average = total / len(numbers)\n    print(\"Average:\", average)\n\nnumbers = [10, 20, 30, 40]\ncalculate_average(numbers",
+    "language": "python",
+    "totalIssues": 1,
+    "issuesFound": [
+      {
+        "line": 4,
+        "col": 23,
+        "ruleName": "Syntax Error",
+        "severity": "HIGH",
+        "message": "Syntax error: expected ':' — \"    for num in numbers\"",
+        "snippet": "    for num in numbers",
+        "suggestedFix": "Fix the syntax on line 4 and run the scan again."
+      }
+    ],
+    "createdAt": "2026-09-14T15:55:07.536Z"
+  },
+  {
     "_id": "local-1788237690041",
     "codeSnippet": "a=18\nif age>=18:\nprint(\"selected\")\nelif:\nprint(\"nort slected\")",
     "language": "python",

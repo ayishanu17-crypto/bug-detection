@@ -20,8 +20,10 @@ const API_BASE_URL = import.meta.env.VITE_API_URL ||
     ? 'http://localhost:5000'
     : '');
 
-// Views that require an authenticated Firebase user
-const PROTECTED_VIEWS = ['dashboard', 'analyzer', 'history', 'rules', 'cicd', 'alerts', 'settings'];
+// Views that require an authenticated Firebase user.
+// The analyzer is intentionally left public so users can see detected issues
+// and the generated corrected code immediately after each scan.
+const PROTECTED_VIEWS = ['dashboard', 'history', 'rules', 'cicd', 'alerts', 'settings'];
 
 function App() {
   const getInitialView = () => {
@@ -244,6 +246,7 @@ function App() {
           language: selectedLanguage,
           totalIssues: data.totalIssues || 0,
           issuesFound: data.issuesFound || [],
+          correctedCode: data.correctedCode || null,
           createdAt: new Date().toISOString()
         });
 
@@ -285,6 +288,16 @@ function App() {
   };
 
   const health = getHealthScore();
+
+  // Severity badge colors — HIGH = red, MEDIUM = amber, LOW = neutral.
+  const severityClasses = (sev) => {
+    const map = {
+      HIGH: 'bg-red-100 text-red-700',
+      MEDIUM: 'bg-amber-100 text-amber-700',
+      LOW: 'bg-slate-100 text-slate-600'
+    };
+    return map[sev] || map.LOW;
+  };
 
   const isSplitLayout = currentView === 'login' || currentView === 'signup';
 
@@ -420,7 +433,7 @@ function App() {
                       <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">Ready to run your first scan?</h2>
                       <p className="text-white/80 mt-1 text-sm">Paste a snippet and get an executive security report in seconds.</p>
                     </div>
-                    <button onClick={() => changeView(isLoggedIn ? 'analyzer' : 'login')} className="btn btn-brutal shrink-0">
+                    <button onClick={() => changeView('analyzer')} className="btn btn-brutal shrink-0">
                       Open the Analyzer
                     </button>
                   </section>
@@ -565,7 +578,7 @@ function App() {
                             >
                               <div className="flex items-center justify-between">
                                 <span className="font-bold text-slate-800 text-xs">Line {issue.line}: {issue.ruleName}</span>
-                                <span className="px-2.5 py-0.5 text-[10px] font-bold text-red-700 bg-red-100 rounded">{issue.severity}</span>
+                                <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded ${severityClasses(issue.severity)}`}>{issue.severity}</span>
                               </div>
                               <p className="text-slate-600 text-xs truncate">{issue.message}</p>
                             </div>
@@ -576,8 +589,8 @@ function App() {
                   </div>
                 </div>
 
-                {/* Corrected Program panel — shown when the analyzer generated a fixed version */}
-                {report && report.correctedCode && report.correctedCode !== code && (
+                {/* Corrected Program panel — always shown below the results when the analyzer generated a fixed version */}
+                {report && report.correctedCode && (
                   <div className="glass rounded-2xl p-5 w-full space-y-3">
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2">

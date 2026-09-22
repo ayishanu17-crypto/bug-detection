@@ -221,7 +221,8 @@ app.post('/api/analyze', async (req, res) => {
           codeSnippet: code,
           language: lang,
           totalIssues: analysisResult.totalIssues,
-          issuesFound: analysisResult.issuesFound
+          issuesFound: analysisResult.issuesFound,
+          correctedCode: analysisResult.correctedCode || null
         });
 
         await newScan.save();
@@ -242,6 +243,7 @@ app.post('/api/analyze', async (req, res) => {
         language: lang,
         totalIssues: analysisResult.totalIssues,
         issuesFound: analysisResult.issuesFound,
+        correctedCode: analysisResult.correctedCode || null,
         createdAt: new Date().toISOString()
       });
     }

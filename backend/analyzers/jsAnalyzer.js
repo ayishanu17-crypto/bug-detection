@@ -120,6 +120,106 @@ function repairAllJavaScript(codeString) {
 }
 
 
+// Build a corrected program by applying SAFE, mechanical fixes for the semantic
+// issues the analyzer reported (syntax repairs are handled by repairAllJavaScript
+// above). Edits are derived from the AST so string literals and comments are
+// never touched, and the output is validated with a full re-parse before being
+// presented to the user — invalid code is never shown as "fixed".
+function buildCorrectedJavaScript(codeString, issues) {
+    if (!codeString || !codeString.trim()) return null;
+    const { ast } = tryParseJavaScript(codeString);
+    if (!ast) return null;
+
+    // (line, col) -> character offset, using the same 0-based columns Acorn uses.
+    const lineStarts = [0];
+    for (let i = 0; i < codeString.length; i++) {
+        if (codeString[i] === '\n') lineStarts.push(i + 1);
+    }
+    const offsetOf = (loc) => {
+        if (!loc || !loc.line || loc.line < 1 || loc.line > lineStarts.length) return 0;
+        return lineStarts[loc.line - 1] + (loc.column || 0);
+    };
+
+    const edits = []; // { start, end, text }, applied from the end of the file backwards
+    const hasRule = (name) => issues.some((i) => i.ruleName === name);
+
+    // 1) Python-style print(...) -> console.log(...)
+    if (hasRule('Use of print()')) {
+        walk.simple(ast, {
+            CallExpression(node) {
+                const callee = node.callee;
+                if (callee && callee.type === 'Identifier' && callee.name === 'print') {
+                    edits.push({
+                        start: offsetOf(callee.loc.start),
+                        end: offsetOf(callee.loc.end),
+                        text: 'console.log'
+                    });
+                }
+            }
+        });
+    }
+
+    // 2) `if (x = 5)` style bugs — assignment used as a condition -> comparison.
+    if (hasRule('Assignment in Condition')) {
+        const fixTest = (stmt) => {
+            const test = stmt.test;
+            if (test && test.type === 'AssignmentExpression' && test.operator === '=') {
+                edits.push({
+                    start: offsetOf(test.left.loc.end),
+                    end: offsetOf(test.right.loc.start),
+                    text: ' === '
+                });
+            }
+        };
+        walk.simple(ast, {
+            IfStatement: fixTest,
+            WhileStatement: fixTest,
+            DoWhileStatement: fixTest
+        });
+    }
+
+    // 3) Non-strict equality: == -> === and != -> !==
+    if (issues.some((i) => i.ruleName && i.ruleName.startsWith('Non-strict equality'))) {
+        walk.simple(ast, {
+            BinaryExpression(node) {
+                if (node.operator === '==' || node.operator === '!=') {
+                    edits.push({
+                        start: offsetOf(node.left.loc.end),
+                        end: offsetOf(node.right.loc.start),
+                        text: node.operator === '==' ? ' === ' : ' !== '
+                    });
+                }
+            }
+        });
+    }
+
+    // 4) Legacy `var` declarations -> `let`
+    if (hasRule('Use of var')) {
+        walk.simple(ast, {
+            VariableDeclaration(node) {
+                if (node.kind === 'var') {
+                    const start = offsetOf(node.loc.start);
+                    edits.push({ start, end: start + 3, text: 'let' });
+                }
+            }
+        });
+    }
+
+    if (!edits.length) return null;
+
+    edits.sort((a, b) => b.start - a.start);
+    let candidate = codeString;
+    for (const e of edits) {
+        if (e.start < 0 || e.end < e.start || e.end > candidate.length) return null;
+        candidate = candidate.slice(0, e.start) + e.text + candidate.slice(e.end);
+    }
+
+    if (candidate === codeString) return null;
+    if (tryParseJavaScript(candidate).error) return null; // never present invalid code as "fixed"
+    return candidate;
+}
+
+
 // ---------------------------------------------------------------------------
 // Rule configuration — mirrors the frontend "Configure Rules" panel
 // ---------------------------------------------------------------------------
@@ -325,6 +425,20 @@ function collectScopeInfo(ast) {
             const list = referenced.get(node.name) || [];
             list.push({ line: node.loc ? node.loc.start.line : 1, col: node.loc ? node.loc.start.column : 0 });
             referenced.set(node.name, list);
+        },
+        AssignmentExpression(node) {
+            // acorn-walk descends into the LHS of an assignment as a "Pattern"
+            // (base.VariablePattern is an `ignore` node), so the Identifier
+            // visitor above never runs for it. Catch bare assignment targets
+            // here so `undefinedVars` can also flag writes to undeclared names
+            // such as `x = 5` or the classic `if (x = 5)` typo.
+            const left = node.left;
+            if (left && left.type === 'Identifier' && left.name) {
+                const loc = (left.loc && left.loc.start) || (node.loc && node.loc.start) || null;
+                const list = referenced.get(left.name) || [];
+                list.push({ line: loc ? loc.line : 1, col: loc ? loc.column : 0 });
+                referenced.set(left.name, list);
+            }
         }
     });
 
@@ -565,13 +679,15 @@ function analyzeJavaScript(codeString, options) {
         }
     }
 
-    // Only emit a corrected program when one was actually generated.
+    // Build the corrected program: apply the safe semantic fixes on top of the
+    // (possibly already syntax-repaired) working code, and fall back to the plain
+    // syntax repair when there was nothing else to change.
     let correctedCode = null;
-    const hasPrintFix = issues.some(i => i.ruleName === 'Use of print()') && /\bprint\s*\(/.test(workingCode);
-    if (changed || hasPrintFix) {
-        let candidate = workingCode;
-        if (hasPrintFix) candidate = candidate.replace(/\bprint\s*\(/g, 'console.log(');
-        if (candidate !== codeString && !tryParseJavaScript(candidate).error) correctedCode = candidate;
+    const semanticCandidate = buildCorrectedJavaScript(workingCode, issues);
+    if (semanticCandidate) {
+        correctedCode = semanticCandidate;
+    } else if (changed && workingCode !== codeString) {
+        correctedCode = workingCode;
     }
 
     return {
