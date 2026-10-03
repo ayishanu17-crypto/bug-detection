@@ -118,6 +118,9 @@ function App() {
     let serverEntries = [];
     try {
       const res = await fetch(`${API_BASE_URL}/api/history`);
+      // A 404 from a static host (e.g. Vercel without the backend deployed)
+      // returns an HTML error page, not JSON — skip it rather than crash.
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (Array.isArray(data)) serverEntries = data;
     } catch (err) {
