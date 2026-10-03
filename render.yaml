@@ -1,0 +1,27 @@
+# Render Blueprint — one-click deployment of the bug-detector Express backend.
+#
+# HOW TO USE (prevents the "backend not running" banner for good):
+#   1. Push this repo to GitHub.
+#   2. Render Dashboard -> New -> Blueprint -> select the repo.
+#   3. When prompted, fill in MONGODB_URI (your MongoDB Atlas connection string).
+#   4. Deploy, then copy the service URL (https://bug-detector-api.onrender.com).
+#   5. In Vercel set the environment variable VITE_API_URL to that URL and redeploy.
+#
+# See DEPLOYMENT.md for the full walkthrough and troubleshooting.
+services:
+  - type: web
+    name: bug-detector-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      # Allows the browser (hosted on Vercel) to call this API (CORS allowlist).
+      - key: CLIENT_URL
+        value: https://bug-detection-liart.vercel.app
+      # Secret — Render will ask you to enter this value at creation time.
+      # Use your MongoDB Atlas connection string, e.g. mongodb+srv://user:pass@cluster.mongodb.net/bug-detector
+      - key: MONGODB_URI
+        sync: false
+      # PORT is injected automatically by Render (server.js already reads process.env.PORT).

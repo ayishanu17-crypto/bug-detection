@@ -1,0 +1,2 @@
+# Used by Render/Heroku-style platforms to start the web process.
+web: npm start

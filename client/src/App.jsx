@@ -20,6 +20,15 @@ const API_BASE_URL = import.meta.env.VITE_API_URL ||
     ? 'http://localhost:5000'
     : '');
 
+// Log which API base the app resolved to. If a deployed site shows the offline
+// banner, this line instantly reveals whether VITE_API_URL was set: an empty
+// value here means the backend was never configured for that deployment.
+console.log('[debugique] API_BASE_URL:', API_BASE_URL || '(not set)', '| VITE_API_URL configured:', Boolean(import.meta.env.VITE_API_URL));
+
+// Only log the first health-check failure; the 5-second retry loop would
+// otherwise flood the console while the backend is offline.
+let backendHealthLogged = false;
+
 // Views that require an authenticated Firebase user.
 // The analyzer is intentionally left public so users can see detected issues
 // and the generated corrected code immediately after each scan.
@@ -142,7 +151,10 @@ function App() {
       clearTimeout(timer);
       setBackendOnline(res.ok);
     } catch (err) {
-      console.error('Backend health check failed:', err);
+      if (!backendHealthLogged) {
+        backendHealthLogged = true;
+        console.error('Backend health check failed at', `${API_BASE_URL}/api/health`, '→', err);
+      }
       setBackendOnline(false);
     }
   };
@@ -257,7 +269,7 @@ function App() {
       }
     } catch (err) {
       console.error('Error connecting to backend:', err);
-      setAnalyzeError('Cannot reach the analysis server. Start the backend with `npm start` inside the backend folder, then run the scan again.');
+      setAnalyzeError('Cannot reach the analysis server. Make sure the backend is deployed and running (or running locally with `npm start` in the backend folder), then run the scan again.');
       setReport(null);
       setBackendOnline(false);
     } finally {
@@ -508,7 +520,11 @@ function App() {
                   <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-400/40 bg-amber-50 text-amber-700 px-4 py-3 text-sm">
                     <div className="flex items-center gap-2">
                       <AlertTriangle size={16} className="shrink-0" />
-                      <span>Backend server is not running. Start it with <code className="font-mono text-xs">npm start</code> in the <code className="font-mono text-xs">backend</code> folder (or run <code className="font-mono text-xs">start.bat</code>) — this banner clears automatically once it is online.</span>
+                      <span>
+                        {!API_BASE_URL
+                          ? <>No API server is configured for this deployment. Set the <code className="font-mono text-xs">VITE_API_URL</code> environment variable in Vercel to your deployed backend URL (e.g. <code className="font-mono text-xs">https://your-api.onrender.com</code>) and redeploy — see DEPLOYMENT.md.</>
+                          : <>Backend at <code className="font-mono text-xs">{API_BASE_URL}</code> is not reachable. It may still be starting up — this banner clears automatically once it is online.</>}
+                      </span>
                     </div>
                     <button onClick={checkBackend} className="font-bold hover:underline shrink-0">Retry</button>
                   </div>
